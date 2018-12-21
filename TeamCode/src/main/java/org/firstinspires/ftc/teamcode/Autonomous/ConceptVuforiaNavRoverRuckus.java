@@ -42,6 +42,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.Control.Rover;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -301,6 +302,19 @@ public class ConceptVuforiaNavRoverRuckus extends LinearOpMode {
                 // express the rotation of the robot in degrees.
                 Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
                 telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+                if (rotation.thirdAngle > 25 && opModeIsActive()) {
+                 telemetry.addLine("CW");
+                    telemetry.update();
+
+
+                }else if(rotation.thirdAngle < 20 && opModeIsActive()){
+                    telemetry.addLine("CCW");
+                    telemetry.update();
+
+                }else {
+                    telemetry.addLine("You have made it brother");
+                }
+
             }
             else {
                 telemetry.addData("Visible Target", "none");
