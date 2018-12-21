@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -942,6 +943,60 @@ public class Rover {
 
     }
 
+    public Position vufmovetest( Position endpos) throws InterruptedException {
+        double orientMotorcoord = 0;
 
+        Position end = abstomotorCoord(endpos);
+
+        if(getCurrentPosition().returnv()[0] < end.returnv()[0]) {
+
+            while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0]) <2 && central.opModeIsActive()){
+                driveTrainMovement(0.5, movements.right);
+
+            }
+            central.telemetry.addLine("got it x");
+
+        }
+        else if(getCurrentPosition().returnv()[0] > end.returnv()[0]) {
+
+            while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0])<2 && central.opModeIsActive()){
+                driveTrainMovement(0.5, movements.left);
+
+            }
+            central.telemetry.addLine("got it x");
+
+        }
+
+        if(getCurrentPosition().returnv()[1] < end.returnv()[1]) {
+
+            while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1])<2 && central.opModeIsActive()){
+            }
+            central.telemetry.addLine("got it y");
+       }
+        else if(getCurrentPosition().returnv()[1] > end.returnv()[1]) {
+
+            while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1]) <2 && central.opModeIsActive()){
+
+            }
+            central.telemetry.addLine("got it y");
+
+        }
+        if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+            while(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+
+            }
+            central.telemetry.addLine("got it orient");
+
+
+        }
+        else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+            while(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+
+            }
+            central.telemetry.addLine("got it orient");
+
+        }
+        return getCurrentPosition();
+    }
 
 }
