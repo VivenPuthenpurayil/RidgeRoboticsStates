@@ -847,14 +847,14 @@ public class Rover {
 
      if(getCurrentPosition().returnv()[0] < end.returnv()[0]) {
 
-         while (getCurrentPosition().returnv()[0] < end.returnv()[0] && central.opModeIsActive()){
+         while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0]) <2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.right);
 
          }
      }
      else if(getCurrentPosition().returnv()[0] > end.returnv()[0]) {
 
-         while (getCurrentPosition().returnv()[0] > end.returnv()[0] && central.opModeIsActive()){
+         while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0])<2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.left);
 
          }
@@ -862,14 +862,14 @@ public class Rover {
 
      if(getCurrentPosition().returnv()[1] < end.returnv()[1]) {
 
-         while (getCurrentPosition().returnv()[1] < end.returnv()[1] && central.opModeIsActive()){
+         while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1])<2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.forward);
 
          }
      }
      else if(getCurrentPosition().returnv()[1] > end.returnv()[1]) {
 
-         while (getCurrentPosition().returnv()[1] > end.returnv()[1] && central.opModeIsActive()){
+         while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1]) <2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.backward);
 
          }
@@ -877,5 +877,7 @@ public class Rover {
 
      return getCurrentPosition();
  }
+
+
 
 }
