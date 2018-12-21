@@ -874,9 +874,73 @@ public class Rover {
 
          }
      }
+     if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+         while(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+             driveTrainMovement(0.5,movements.cw);
+         }
 
+     }
+     else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+         while(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+             driveTrainMovement(0.5,movements.ccw);
+         }
+
+     }
      return getCurrentPosition();
  }
+    public void ultrasonicturndepot(int degrees, turnside d){
+
+        int a = 45;
+        int b = 135-degrees;
+
+        // final/sin45 = start/sinb   final = start(sin45)/sinb
+        double start = rangeDistancefront();
+
+        if(d == turnside.ccw) {
+            if(rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+                while (rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+                    motorBR.setPower(0.5);
+                    motorFR.setPower(0.5);
+                    motorBL.setPower(-0.5);
+                    motorFL.setPower(-0.5);
+
+                }
+            }
+            else if(rangeDistancefront() > start * Math.sin(45) / Math.sin(b)){
+                while (rangeDistancefront() > start * Math.sin(45) / Math.sin(b)) {
+                    motorBR.setPower(0.5);
+                    motorFR.setPower(0.5);
+                    motorBL.setPower(-0.5);
+                    motorFL.setPower(-0.5);
+
+                }
+            }
+        }
+
+
+        else if(d == turnside.cw) {
+            if(rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+                while (rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+                    motorBR.setPower(-0.5);
+                    motorFR.setPower(-0.5);
+                    motorBL.setPower(0.5);
+                    motorFL.setPower(0.5);
+
+                }
+            }
+            else if(rangeDistancefront() > start * Math.sin(45) / Math.sin(b)){
+                while (rangeDistancefront() > start * Math.sin(45) / Math.sin(b)) {
+                    motorBR.setPower(-0.5);
+                    motorFR.setPower(-0.5);
+                    motorBL.setPower(0.5);
+                    motorFL.setPower(0.5);
+
+                }
+            }
+
+        }
+
+    }
 
 
 
