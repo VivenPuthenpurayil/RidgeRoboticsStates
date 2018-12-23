@@ -668,7 +668,7 @@ public class Rover {
 
     //-----------------------------------Mapping------------------------------------------------
     public static class Position{
-        double[] vector;
+        double[] vector = {0,0,0};
         double orient;
 
         public Position(double[] vector, double orient) {
@@ -705,34 +705,14 @@ public class Rover {
         }
     public static Position vuftopos(double xtrans, double ytrans, double ztrans, double orientation, String id) {
         double v[] = new double[3];
-        if (id.equals("Back-Space")) {
-            v[0] = -xtrans;
-            v[1] = -ytrans;
-            v[2] = ztrans;
-            return new Position(v, orientation + 180);
 
-        } else if (id.equals("Red-Footprint")) {
-            v[0] = -ytrans;
-            v[1] = xtrans;
-            v[2] = ztrans;
-            return new Position(v, orientation + 90);
-
-        } else if (id.equals("Front-Craters")) {
             v[0] = xtrans;
             v[1] = ytrans;
             v[2] = ztrans;
-            return new Position(v, orientation);
 
-        } else if (id.equals("Blue-Rover")) {
-            v[0] = ytrans;
-            v[1] = -xtrans;
-            v[2] = ztrans;
-            return new Position(v, -orientation - 180);
+                return new Position(v,orientation);
 
-        }
-        else {
-            return null;
-        }
+
     }
 
     public  Position currentabspossensors(int orient){
@@ -1004,7 +984,7 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
         }
         if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-            while(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()&& central.opModeIsActive()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno()) > 5 && central.opModeIsActive()){
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
@@ -1016,7 +996,7 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
         }
         else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
-            while(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()&& central.opModeIsActive()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno()) > 5 && central.opModeIsActive()){
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
