@@ -13,13 +13,11 @@ public class testvufposmove extends AutonomousControl {
 
     @Override
     public void runOpMode() throws InterruptedException {
-
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.vuforia);
-
+        setup(runtime, Rover.setupType.vuforia);
         while (opModeIsActive()) {
             double[] x = {24,12,10};
-rob.vufmovetest(new Rover.Position(x,90));
-
+            rob.vufmovetest(new Rover.Position(x,90));
+            sleep(100);
         }
     }
 }
