@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Tests.Functionality;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.Rover;
@@ -16,7 +17,7 @@ public class Test_Shooter extends Test {
 
 
     public void runOpMode() throws InterruptedException{
-        setRob(new Rover(hardwareMap, runtime, this, Rover.setupType.none));
+        DcMotor dcMotor = motor("motor", DcMotorSimple.Direction.FORWARD);
         setRuntime(runtime);
 
 
@@ -27,14 +28,25 @@ public class Test_Shooter extends Test {
         while (opModeIsActive()) {
 
             if (gamepad1.a) {
-                rob.rack.setPower(0.4);
+                dcMotor.setPower(0.2);
             }
             else if (gamepad1.y){
-                rob.rack.setPower(-0.4);
+                dcMotor.setPower(-0.2);
             }
             else {
-                rob.rack.setPower(0);
+                dcMotor.setPower(0);
             }
+
+            if (gamepad1.b) {
+                dcMotor.setPower(0.4);
+            }
+            else if (gamepad1.x){
+                dcMotor.setPower(-0.4);
+            }
+            else {
+                dcMotor.setPower(0);
+            }
+
 
 
         }
