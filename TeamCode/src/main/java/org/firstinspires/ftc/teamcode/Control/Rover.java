@@ -133,6 +133,12 @@ public class Rover {
     //----------------CONFIGURATION FIELDS--------------------
 
 
+    SamplingOrder sampleStatus = SamplingOrder.UNCHECKED;
+
+
+
+
+
     //----  MAPPING         ----
     ModernRoboticsI2cRangeSensor rangeSensorfront;
     ModernRoboticsI2cRangeSensor rangeSensorback;
@@ -204,11 +210,17 @@ public class Rover {
         central.telemetry.update();
     }
     public void deploy() throws InterruptedException{
+
         while(!deployingLimit.getState() && central.opModeIsActive())
         {
             anyMovement(0.8, movements.rackExtend, rack);
+            sample();
         }
         rack.setPower(0);
+
+        if (sampleStatus==SamplingOrder.UNKNOWN){
+            sample();
+        }
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
         driveTrainEncoderMovement(0.8, 20, 3, 50, right);
@@ -561,6 +573,16 @@ public class Rover {
         }
     }
 
+    public void sample() {
+        if (sampleStatus==SamplingOrder.UNCHECKED) {
+            //Sample
+        }
+        else if (sampleStatus==SamplingOrder.UNKNOWN){
+            //Multiple Attempt Sampling
+        }
+
+    }
+
 
     //ENUMERATIONS
 
@@ -570,6 +592,7 @@ public class Rover {
     public enum setupType{
         autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia;
     }
+
 
 
     //-------------------SET FUNCTIONS--------------------------------
@@ -664,6 +687,10 @@ public class Rover {
     }
 
 
+    //-----------------------------------Image Processing---------------------------------------
+    public enum SamplingOrder{
+        LEFT, CENTER, RIGHT, UNKNOWN, UNCHECKED;
+    }
 
     //-----------------------------------Mapping------------------------------------------------
     public static class Position{
@@ -840,7 +867,7 @@ public class Rover {
         endpos.updateOrient(endpos.returno() + orientMotorcoord);
         return getCurrentPosition(); //returns abs pos
     }
- public Position moveusingvuf( Position endpos) throws InterruptedException {
+    public Position moveusingvuf( Position endpos) throws InterruptedException {
      double orientMotorcoord = 0;
 
      Position end = abstomotorCoord(endpos);
