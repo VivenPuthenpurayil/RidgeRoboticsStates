@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.opencv.core.Mat;
 
 import java.util.Arrays;
 
@@ -656,6 +657,23 @@ public class Rover {
             drivetrain[i].setPower(comp1[i]+comp2[i]);
         }
     }
+
+
+    public void anyDirection(double speed, double angleDegrees){
+        double theta = Math.toRadians(angleDegrees);
+        double beta = Math.atan(7/3);
+
+        double v1 = 0.25 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
+        double v2 = 0.25 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+
+
+
+
+        for (int i = 0; i < 4; i++) {
+            drivetrain[i].setPower((i % 2 == 0 ? v2 : v1));
+        }
+
+    }
     public enum turnside {
         ccw, cw
     }
@@ -663,6 +681,8 @@ public class Rover {
     public enum axis {
         front, center, back
     }
+
+
 
 
 
