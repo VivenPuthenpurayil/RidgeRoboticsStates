@@ -3,14 +3,10 @@ package org.firstinspires.ftc.teamcode.Control;
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
-import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetectorNarrow;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-import static com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetectorNarrow.GoldLocation.CENTER;
-import static com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetectorNarrow.GoldLocation.LEFT;
-import static com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetectorNarrow.GoldLocation.RIGHT;
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
@@ -169,67 +165,6 @@ public abstract class AutonomousControl extends Central {
             case UNKNOWN:
                 sampling();
         }*/
-
-    }
-    public void samplingNarrow () throws InterruptedException {
-        SamplingOrderDetectorNarrow detector = new SamplingOrderDetectorNarrow();
-        detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
-        detector.useDefaults();
-        detector.downscale = 0.4;
-        detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA;
-        detector.maxAreaScorer.weight = 0.005;
-        detector.ratioScorer.weight = 5;
-        detector.ratioScorer.perfectRatio = 1.0;
-        detector.enable();
-        int leftScore = 0;
-        int centerScore = 0;
-        int rightScore = 0;
-        double startTime= runtime.milliseconds();
-
-        while (runtime.milliseconds() < startTime + 5000){
-            switch (detector.getCurrentOrder()){
-                case LEFT:
-                    leftScore++;
-                    break;
-                case RIGHT:
-                    rightScore++;
-                    break;
-                case CENTER:
-                    centerScore++;
-                    break;
-                case NOTLEFT:
-                    leftScore--;
-                    break;
-                case NOTRIGHT:
-                    rightScore--;
-                    break;
-                case NOTCENTER:
-                    centerScore--;
-                    break;
-                default: break;
-            }
-        }
-        int max = Math.max(Math.max(centerScore,leftScore),rightScore);
-        if(max == centerScore){
-            telemetry.addData("detected:", "center");
-            telemetry.update();
-            centerPosition();
-            knockingOffCenter();
-        }
-        if(max == leftScore){
-            telemetry.addData("detected:", "left");
-            telemetry.update();
-            leftPosition();
-            knockingOffLeft();
-        }
-        if(max==rightScore){
-            telemetry.addData("detected:", "right");
-            telemetry.update();
-            rightPosition();
-            knockingOffRight();
-        }
-
-
 
     }
 
