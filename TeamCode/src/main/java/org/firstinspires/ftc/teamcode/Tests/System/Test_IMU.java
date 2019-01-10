@@ -19,12 +19,6 @@ public class Test_IMU extends Test {
 
 
         while (opModeIsActive()) {
-
-
-            telemetry.addLine("Beginning");
-            telemetry.update();
-            telemetry.addData("Status: ", rob.imu.getSystemStatus());
-            telemetry.update();
             telemetry.addData("Orientation: ", rob.imu.getAngularOrientation());
             telemetry.update();
 

@@ -160,7 +160,6 @@ public class Rover {
     public double mecanumAngle = 36; //from forwards, in degrees
     public double communism = StrafetoTotalPower*Math.cos(Math.toRadians(mecanumAngle*2));
 
-
     //----  MINERAL CONTROL ----
 
     public DcMotor arm;
@@ -313,6 +312,7 @@ public class Rover {
         imu.initialize(parameters);
         initorient = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         central.telemetry.addData("IMU status", imu.getSystemStatus());
+        central.telemetry.update();
 
 
     }
@@ -508,8 +508,8 @@ public class Rover {
         central.telemetry.addData("IMU State: ", imu.getSystemStatus());
         central.telemetry.update();
 
-        float start = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-        float end = start + ((direction == turnside.cw) ? target : -target);
+        double start = getDirection();
+        double end = start + ((direction == turnside.cw) ? target : -target);
         isnotstopped = true;
         try {
             switch (rotation_Axis) {
@@ -526,9 +526,7 @@ public class Rover {
         } catch (InterruptedException e) {
             isnotstopped = false;
         }
-        while (!((end <= current.firstAngle + 1) && end > current.firstAngle - 1) && central.opModeIsActive() && isnotstopped) {
-            current = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        }
+        while (!((end <= getDirection()+1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {}
         try {
             stopDrivetrain();
         } catch (InterruptedException e) {
@@ -658,45 +656,37 @@ public class Rover {
 
     // movement but now its better???
 
-    public double[] superstrafe( double dir, double velo){
-        double yeet = communism/Math.sin(Math.toRadians(180-2*mecanumAngle));
-        double left = velo*yeet*Math.sin(Math.toRadians(mecanumAngle-dir));
-        double right = velo*yeet*Math.sin(Math.toRadians(mecanumAngle+dir));
-        double [] retval= {left,right,right,left};
-        return retval;
-    }
-
     public double[] superturn(double angvelo) { //
         double coeff = angvelo * (1 - StrafetoTotalPower);
-        double[] retval = {coeff, -coeff, coeff, -coeff};
+        double[] retval = {coeff, -coeff};
         return retval;
     }
 
-    public void superstrafe(double dir, double velo, double angvelo){
-        float angle = (360+imu.getAngularOrientation(AxesReference.INTRINSIC,AxesOrder.XYZ,AngleUnit.DEGREES).thirdAngle)%360;
-        double[] comp1=superstrafe(dir-angle,velo);
+
+    public double[] superstrafe(double dir, double velo, double angvelo){
+        double angle = (360+getDirection())%360;
+        double[] comp1=anyDirection(velo,dir-angle);
         double[] comp2=superturn(angvelo);
+        double[] retval = new double[2];
         for(int i=0;i<4;i++) {
-            drivetrain[i].setPower(comp1[i]+comp2[i]);
+            //drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
+            retval[i%2] = comp1[i%2]+comp2[i%2];
         }
+        return retval;
     }
 
 
-    public void anyDirection(double speed, double angleDegrees){
+    public double[] anyDirection(double speed, double angleDegrees){
         double theta = Math.toRadians(angleDegrees);
         double beta = Math.atan(7/3);
 
-        double v1 = 0.25 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
-        double v2 = 0.25 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+        double v1 = 84/58 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
+        double v2 = 84/58 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
 
-
-
-
-        for (int i = 0; i < 4; i++) {
-            drivetrain[i].setPower((i % 2 == 0 ? v2 : v1));
-        }
-
+        double[]retval = {StrafetoTotalPower*v1,StrafetoTotalPower*v2};
+        return retval;
     }
+
     public enum turnside {
         ccw, cw
     }
@@ -1059,4 +1049,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         return getCurrentPosition();
     }
 
+    //-------------------------------------Sensors-------------------------------------------
+    public double getDirection(){
+        return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
+    }
 }
