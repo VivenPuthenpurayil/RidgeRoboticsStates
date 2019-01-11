@@ -974,6 +974,7 @@ public class Rover {
 
 
         double orientMotorcoord = 0;
+        endpos.updateOrient(getCurrentPosition().returno());
 
         Position end = abstomotorCoord(endpos);
 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
