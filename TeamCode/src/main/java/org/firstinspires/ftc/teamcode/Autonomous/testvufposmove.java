@@ -17,7 +17,7 @@ public class testvufposmove extends AutonomousControl {
         while (opModeIsActive()) {
             double[] x = {24,12,10};
             rob.vufmovetest(new Rover.Position(x,90));
-            sleep(100);
+            sleep(10000);
         }
     }
 }
