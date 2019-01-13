@@ -114,22 +114,21 @@ public abstract class AutonomousControl extends Central {
 
     public void knockingOffCenter() throws InterruptedException{
         rob.driveTrainEncoderMovement(0.2, 10,10, 2, Rover.movements.forward);
-        rob.driveTrainEncoderMovement(0.2, 10,10, 2, Rover.movements.backward);
         //drop off the team marker stuff isn't configured/made
     }
 
     public void knockingOffLeft() throws InterruptedException{
-        rob.driveTrainEncoderMovement(0.2, 14,10, 2, Rover.movements.tl);
-        rob.driveTrainEncoderMovement(0.2, 14,10, 2, Rover.movements.br);
+        rob.driveTrainEncoderMovement(0.2, 5,10, 2, Rover.movements.forward);
+        rob.driveTrainEncoderMovement(0.2, 5,10, 2, Rover.movements.right);
         //drop off the team marker stuff isn't configured/made
     }
 
     public void knockingOffRight() throws InterruptedException{
-        rob.driveTrainEncoderMovement(0.2, 14,10, 2, Rover.movements.tr);
-        rob.driveTrainEncoderMovement(0.2, 14,10, 2, Rover.movements.bl);
+        rob.driveTrainEncoderMovement(0.2, 5,10, 2, Rover.movements.forward);
+        rob.driveTrainEncoderMovement(0.2, 5,10, 2, Rover.movements.left);
         //drop off the team marker stuff isn't configured/made
     }
-    
+
     public void goToCraterCraterSide() throws InterruptedException{
         rob.turn(45, Rover.turnside.ccw,.5, Rover.axis.back);
         rob.driveTrainEncoderMovement(0.5, 144, 20, 1, Rover.movements.backward);
@@ -153,7 +152,7 @@ public abstract class AutonomousControl extends Central {
 
         telemetry.addData("Sample: ", detector.getCurrentOrder().name());
         telemetry.update();
-        switch(detector.getCurrentOrder()){
+        /*switch(detector.getCurrentOrder()){
             case LEFT:
                 leftPosition();
                 knockingOffLeft();
@@ -165,7 +164,7 @@ public abstract class AutonomousControl extends Central {
                 knockingOffRight();
             case UNKNOWN:
                 sampling();
-        }
+        }*/
 
     }
 
