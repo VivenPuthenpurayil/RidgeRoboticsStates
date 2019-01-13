@@ -222,8 +222,16 @@ public class Rover {
         if (sampleStatus==SamplingOrder.UNKNOWN){
             sample();
         }
+
+        while (Math.sqrt(Math.pow(imu.getAcceleration().xAccel,2)+Math.pow(imu.getAcceleration().yAccel,2))>10){
+            driveTrainMovement(1,backward);
+        }
+
+        absturn(initorient,0.5,axis.center);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
-        driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
+        //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
+
+
         driveTrainEncoderMovement(0.8, 20, 3, 50, right);
         driveTrainEncoderMovement(0.8, 5, 3, 50, forward);
         driveTrainEncoderMovement(0.8, 8, 3, 50, left);
@@ -502,14 +510,21 @@ public class Rover {
 
         }
     }
-
-    public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
+    public void absturn(float target, double speed, axis rotation_Axis) throws InterruptedException{
+        turn((getDirection()-target+360)%360,speed);
+    }
+    public void turn(double target, double speed) throws InterruptedException{
+        turnside mem;
+        mem = (target<0)?turnside.ccw:turnside.cw;
+        turn(target, mem,speed,axis.center);
+    }
+    public void turn(double target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
 
         central.telemetry.addData("IMU State: ", imu.getSystemStatus());
         central.telemetry.update();
 
         double start = getDirection();
-        double end = start + ((direction == turnside.cw) ? target : -target);
+        double end = (start + ((direction == turnside.cw) ? target : -target)+360)%360;
         isnotstopped = true;
         try {
             switch (rotation_Axis) {
@@ -527,10 +542,8 @@ public class Rover {
             isnotstopped = false;
         }
         while (!((end <= getDirection()+1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {}
-        try {
-            stopDrivetrain();
-        } catch (InterruptedException e) {
-        }
+
+        stopDrivetrain();
 
     }
 
