@@ -223,13 +223,16 @@ public class Rover {
         if (sampleStatus==SamplingOrder.UNKNOWN){
             sample();
         }
-        //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
-        driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
-        driveTrainEncoderMovement(0.8, 20, 3, 50, right);
-        driveTrainEncoderMovement(0.8, 5, 3, 50, forward);
-        driveTrainEncoderMovement(0.8, 8, 3, 50, left);
-        //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
-        //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
+
+        detach();
+
+    }
+
+    public void detach() throws InterruptedException {
+        driveTrainEncoderMovement(0.4, 5, 5, 50, right);
+        driveTrainEncoderMovement(0.4, 4, 5, 50, forward);
+        driveTrainEncoderMovement(0.4, 5, 5, 50, left);
+
 
     }
 
