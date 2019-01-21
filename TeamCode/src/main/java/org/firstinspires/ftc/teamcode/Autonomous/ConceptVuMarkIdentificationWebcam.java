@@ -68,7 +68,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  * is explained in {@link ConceptVuforiaNavigationWebcam}.
  */
 
-@Autonomous(name="Concept: VuMark Id Webcam", group ="Smart")
+@Autonomous(name="Concept: VuMark Id Webcam", group ="Concept")
 
 public class ConceptVuMarkIdentificationWebcam extends LinearOpMode {
 
