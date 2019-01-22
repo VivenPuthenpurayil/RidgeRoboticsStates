@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
 
-@Autonomous(name="Crater", group ="Smart")
+@Autonomous(name="Meet11319", group ="Smart")
 
 
 
-public class crater extends AutonomousControl {
+public class Meet11319 extends AutonomousControl {
     private ElapsedTime runtime = new ElapsedTime();
     @Override
     public void runOpMode() throws InterruptedException {
@@ -18,6 +18,7 @@ public class crater extends AutonomousControl {
 
         while (opModeIsActive()) {
             rob.deploy();
+            break;
             /*//do vuforia
             sampling();
             rob.driveTrainEncoderMovement(0.2, 10, 10, 2, Rover.movements.backward);

@@ -41,7 +41,9 @@ import static org.firstinspires.ftc.teamcode.Control.Constants.motorFRS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.phoneSwivelS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.rackS;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.backward;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.cw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward2;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.left;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.right;
 
@@ -89,9 +91,9 @@ public class Rover {
                     setupIMU();
                     setupDrivetrain();
                     setupMineralControl();
-                    //setupVuforia();
-                   // setupPhone();
-                   // setupSensors();
+                    setupVuforia();
+                    //setupPhone();
+                    //setupSensors();
                     break;
 
 
@@ -222,19 +224,11 @@ public class Rover {
         if (sampleStatus==SamplingOrder.UNKNOWN){
             sample();
         }
-
-        while (Math.sqrt(Math.pow(imu.getAcceleration().xAccel,2)+Math.pow(imu.getAcceleration().yAccel,2))>10){
-            driveTrainMovement(1,backward);
-        }
-
-        absturn(initorient,0.5,axis.center);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
-        //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
-
-
-        driveTrainEncoderMovement(0.8, 20, 3, 50, right);
-        driveTrainEncoderMovement(0.8, 5, 3, 50, forward);
-        driveTrainEncoderMovement(0.8, 8, 3, 50, left);
+        //while(Math.absimu.getAcceleration())
+        driveTrainTimeMovement(0.8, backward, 500, 50);
+        driveTrainTimeMovement(0.8, right, 500, 50);
+        driveTrainTimeMovement(0.8, forward, 500, 50);
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
@@ -409,7 +403,7 @@ public class Rover {
 
             for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance *COUNTS_PER_MOTOR_NEVEREST);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
             }
             for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
@@ -510,26 +504,19 @@ public class Rover {
 
         }
     }
-    public void absturn(float target, double speed, axis rotation_Axis) throws InterruptedException{
-        turn((getDirection()-target+360)%360,speed);
-    }
-    public void turn(double target, double speed) throws InterruptedException{
-        turnside mem;
-        mem = (target<0)?turnside.ccw:turnside.cw;
-        turn(target, mem,speed,axis.center);
-    }
-    public void turn(double target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
+
+    public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
 
         central.telemetry.addData("IMU State: ", imu.getSystemStatus());
         central.telemetry.update();
 
         double start = getDirection();
-        double end = (start + ((direction == turnside.cw) ? target : -target)+360)%360;
+        double end = start + ((direction == turnside.cw) ? target : -target);
         isnotstopped = true;
         try {
             switch (rotation_Axis) {
                 case center:
-                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cw : movements.ccw);
+                    driveTrainMovement(speed, (direction == turnside.cw) ? cw : movements.ccw);
                     break;
                 case back:
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
@@ -542,8 +529,10 @@ public class Rover {
             isnotstopped = false;
         }
         while (!((end <= getDirection()+1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {}
-
-        stopDrivetrain();
+        try {
+            stopDrivetrain();
+        } catch (InterruptedException e) {
+        }
 
     }
 
@@ -560,6 +549,17 @@ public class Rover {
             motor.setPower(signs[x]* speed);
 
         }
+    }
+    public void driveTrainTimeMovement(double speed, movements movement, long duration, long waitAfter) throws InterruptedException{
+        double[] signs = movement.getDirections();
+        for (DcMotor motor: drivetrain){
+            int x = Arrays.asList(drivetrain).indexOf(motor);
+            motor.setPower(signs[x]* speed);
+
+        }
+        central.sleep(duration);
+        stopDrivetrain();
+        central.sleep(waitAfter);
     }
 
     public void anyMovement(double speed, movements movement, DcMotor... motors) throws InterruptedException{
@@ -907,13 +907,13 @@ public class Rover {
          }
      }
      if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-         while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
-             driveTrainMovement(0.5,movements.cw);
+         while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5&& central.opModeIsActive()){
+             driveTrainMovement(0.5,cw);
          }
 
      }
      else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
-         while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
+         while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5&& central.opModeIsActive()){
              driveTrainMovement(0.5,movements.ccw);
          }
 

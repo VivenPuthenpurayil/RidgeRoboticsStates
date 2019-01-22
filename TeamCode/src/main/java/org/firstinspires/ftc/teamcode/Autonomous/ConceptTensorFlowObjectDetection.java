@@ -35,10 +35,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
+import org.firstinspires.ftc.teamcode.Control.Rover;
 
 import java.util.List;
 
@@ -52,12 +54,13 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
-
-public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
+@Autonomous(name = "Concept: TensorFlow Object Detection", group = "Concept")
+public class ConceptTensorFlowObjectDetection extends AutonomousControl {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+    public static final String VUFORIA_KEY = "AUaoObT/////AAABmZESOvJAgkXJk00eebGyewdT7a9NZK5YLL9rnvWS5jwOFcmnubSqY4E8gnBkljxMEsVfBteT2JE95kMUrCT379Ya4Inep4AQqT2IQRvFD5lTr2PYVIWp9c6oe2f1C9T8M1aco5W/O4kU1kOf0UGikrcSheCnor0nc2siDkbfT8s1YRRZVXl56xrCw7Po6PsU4tkZJ9F2tp9YyMmowziEIjbeLJ+V3C51kRnNyiMuF3ev0Einp5ioXgW82RJMPiJLiiKZZP9ARLYGLsNX+nOFFJXRrKywydpwcWwlyAaHzWpSJ9yWgAMwFY1iN4BBq8VaFInXY+T40/g/WCBxM7WLkWNNOe44921UcyFGgjqxf/T2";
+
 
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -71,7 +74,6 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
      * Once you've obtained a license key, copy the string from the Vuforia web site
      * and paste it in to your code on the next line, between the double quotes.
      */
-    private static final String VUFORIA_KEY = " AcowzAr/////AAABmZ1O2qADtkUEtt6Ubzpq/jpUtz5mLmoeN8h5vCHHyrt+z8HddaupaRFcm9GWPN3OyHX0Pu4J4q/AGcE3K3MrXHCzMqReZXCWIRXfbWw5sFOBKA2b9jQ4PFPamJ1OWeZKmKe8xVHmpaC+KN47xMnIsPOg5EUdvoQPbPA9Tot3I4eeGRiJD2NosRcVqYypb/ubtx1v3kfFA5QxC5ob/mbbRMU5z/A0Sk5mzvaDFpR7qnu1/WbwpdM8Uo2HxjzBeTB3+oTIQ3aFMKhPfgQl1KXZkRRbtdfiVopSwkTT5yZh0H7IgZVAwc7Bk726o+h2z8evOSTuDOkps4+8lYLbBrNUVemer37ET+gQLmbOzd4/8d7q";
 
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -86,7 +88,7 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
     private TFObjectDetector tfod;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
@@ -97,10 +99,8 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
             telemetry.addData("Sorry!", "This device is not compatible with TFOD");
         }
 
-        /** Wait for the game to begin */
-        telemetry.addData(">", "Press Play to start tracking");
-        telemetry.update();
-        waitForStart();
+        setup(runtime, Rover.setupType.drive, Rover.setupType.imu);
+
 
         if (opModeIsActive()) {
             /** Activate Tensor Flow Object Detection. */
@@ -115,7 +115,7 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                     if (updatedRecognitions != null) {
                       telemetry.addData("# Object Detected", updatedRecognitions.size());
-                      if (updatedRecognitions.size() == 3) {
+                      if (updatedRecognitions.size() == 2) {
                         int goldMineralX = -1;
                         int silverMineral1X = -1;
                         int silverMineral2X = -1;
@@ -128,6 +128,33 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
                             silverMineral2X = (int) recognition.getLeft();
                           }
                         }
+
+                        int x =  checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
+                        telemetry.addData("Value: ", x);
+                        switch (x){
+                            case 0:
+                                telemetry.addData("Gold Mineral Position", "Right");
+                                break;
+                            case 1:
+                                if (goldMineralX < silverMineral2X){
+                                    telemetry.addData("Gold Mineral Position", "Left");
+                                }
+                                else{
+                                    telemetry.addData("Gold Mineral Position", "Center");
+                                }
+                            case 2:
+                                if (goldMineralX < silverMineral1X){
+                                    telemetry.addData("Gold Mineral Position", "Left");
+                                }
+                                else{
+                                    telemetry.addData("Gold Mineral Position", "Center");
+                                }
+                            default:
+                                telemetry.addLine("no clue b");
+                                break;
+                        }
+
+                        /*
                         if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
                           if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
                             telemetry.addData("Gold Mineral Position", "Left");
@@ -136,7 +163,7 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
                           } else {
                             telemetry.addData("Gold Mineral Position", "Center");
                           }
-                        }
+                        }*/
                       }
                       telemetry.update();
                     }
@@ -149,6 +176,20 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
         }
     }
 
+    public int checkMinerals(int gold, int sil1, int sil2){
+        if (gold == -1 && sil1 != -1 && sil2 != -1){
+            return 0;
+        }
+        else if (gold != -1 && sil1 == -1 && sil2 != -1){
+            return 1;
+        }
+        else if (gold != -1 && sil1 != -1 && sil2 == -1){
+            return 2;
+        }else{
+            return -1;
+        }
+
+    }
     /**
      * Initialize the Vuforia localization engine.
      */
@@ -159,7 +200,7 @@ public class ConceptTensorFlowObjectDetectionWebcam extends LinearOpMode {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
+        parameters.cameraDirection = CameraDirection.BACK;
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
