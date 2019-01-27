@@ -9,9 +9,9 @@ import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
 import static org.firstinspires.ftc.teamcode.Control.Constants.ROTATION_SPEED;
 
 
-@TeleOp(name = "DriveMode", group = "Smart")
+@TeleOp(name = "DriveMode 2", group = "Smart")
 
-public class DriveMode extends TeleOpControl {
+public class DriveMode2 extends TeleOpControl {
 
 
     private ElapsedTime runtime = new ElapsedTime();
@@ -25,15 +25,7 @@ public class DriveMode extends TeleOpControl {
             // GAMEPAD OBJECT
             standardGamepadData();
 
-
-            if (rightStickButtonPressed) {
-                // CLOCKWISE
-                rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.cw);
-            } else if (leftStickButtonPressed) {
-                // COUNTERCLOCKWISE
-                rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.ccw);
-            }
-            else if (gamepad1.dpad_up){
+             if (gamepad1.dpad_up){
                 rob.driveTrainMovement(0.2,Rover.movements.forward);
             }
             else if (gamepad1.dpad_right){
@@ -62,20 +54,14 @@ public class DriveMode extends TeleOpControl {
                     //LEFT
                 }
             } else if (validStick(xAxis2, yAxis2)) {    //DIAGONAL
-
-                if (yAxis2 >= 0 && xAxis2 >= 0) {
-                    rob.driveTrainMovement(diagonalSpeed,Rover.movements.tr);
-                    //TOP RIGHT
-                } else if (yAxis2 >= 0 && xAxis2 < 0) {
-                    rob.driveTrainMovement(diagonalSpeed,Rover.movements.tl);
-                    //TOP LEFT
-                } else if (yAxis2 < 0 && xAxis2 >= 0) {
-                    rob.driveTrainMovement(diagonalSpeed, Rover.movements.br);
-                    //BOTTOM RIGHT
-                } else if (yAxis2 < 0 && xAxis2 < 0) {
-                    rob.driveTrainMovement(diagonalSpeed,Rover.movements.bl);
-                    //BOTTOM LEFT
+                if (Math.abs(yAxis2) < xAxis2) {
+                    rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.cw);
+                    //Rotate
+                } else if (-Math.abs(yAxis2) > xAxis2) {
+                    rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.ccw);
+                    //Rotate
                 }
+
             } else {
                 rob.stopDrivetrain();
             }
