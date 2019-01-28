@@ -550,6 +550,12 @@ public class Rover {
 
         }
     }
+    public void driveTrainMovement(double... speed) throws InterruptedException{
+
+        for (int i = 0; i < drivetrain.length; i++) {
+            drivetrain[i].setPower(speed[i]);
+        }
+    }
     public void driveTrainTimeMovement(double speed, movements movement, long duration, long waitAfter) throws InterruptedException{
         double[] signs = movement.getDirections();
         for (DcMotor motor: drivetrain){
@@ -575,6 +581,7 @@ public class Rover {
             motor.setPower(0);
         }
     }
+
 
     public void powerMotors(double speed, long time, DcMotor... motors) {
         for (DcMotor motor : motors) {
@@ -698,7 +705,9 @@ public class Rover {
 
         double[]retval = {StrafetoTotalPower*v1,StrafetoTotalPower*v2};
         return retval;
+
     }
+
 
     public enum turnside {
         ccw, cw
@@ -988,7 +997,6 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         if(abstomotorCoord(getCurrentPosition()).returnv()[0]< end.returnv()[0]) {
 
             while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
-                driveTrainMovement(0.5, movements.right);
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
@@ -1001,7 +1009,6 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         else if(abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
 
             while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
-                driveTrainMovement(0.5, movements.left);
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
