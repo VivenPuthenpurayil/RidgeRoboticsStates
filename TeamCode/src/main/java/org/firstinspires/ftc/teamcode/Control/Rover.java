@@ -886,31 +886,31 @@ public class Rover {
 
         Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()));
 
-     if(getCurrentPosition().returnv()[0] < end.returnv()[0]) {
+     if(abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
 
-         while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
+         while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.right);
 
          }
      }
-     else if(getCurrentPosition().returnv()[0] > end.returnv()[0]) {
+     else if(abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
 
-         while (Math.abs(getCurrentPosition().returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
+         while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.left);
 
          }
      }
 
-     if(getCurrentPosition().returnv()[1] < end.returnv()[1]) {
+     if(abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
 
-         while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
+         while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.forward);
 
          }
      }
-     else if(getCurrentPosition().returnv()[1] > end.returnv()[1]) {
+     else if(abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
 
-         while (Math.abs(getCurrentPosition().returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
+         while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
              driveTrainMovement(0.5, movements.backward);
 
          }
@@ -1069,7 +1069,49 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         }
         return getCurrentPosition();
     }
+    public Position bettermove( Position endpos) throws InterruptedException {
+        double orientMotorcoord = 0;
 
+
+        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()));
+        while (Math.sqrt(Math.pow(Math.abs(getCurrentPosition().returnv()[0] - endpos.returnv()[0]),2)+Math.pow(Math.abs(getCurrentPosition().returnv()[0] - endpos.returnv()[0]),2)) > 3 && central.opModeIsActive()) {
+
+            if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
+
+                driveTrainMovement(0.5, movements.right);
+
+
+            } else if (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
+
+                driveTrainMovement(0.5, movements.left);
+
+
+            } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
+
+                driveTrainMovement(0.5, movements.forward);
+
+
+            } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
+
+                driveTrainMovement(0.5, movements.backward);
+
+
+            }
+        }
+        if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
+                driveTrainMovement(0.5,movements.cw);
+            }
+
+        }
+        else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
+                driveTrainMovement(0.5,movements.ccw);
+            }
+
+        }
+        return getCurrentPosition();
+    }
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
