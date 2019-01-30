@@ -27,7 +27,7 @@ public class Test_Encoders extends Test {
             for (int i = 0; i < allMovements.length; i++) {
                 telemetry.addLine(allMovements[i].name());
                 telemetry.update();
-                rob.driveTrainEncoderMovement(0.5, 10, 10, 500, allMovements[i]);
+                rob.encoderMovement(0.5, 10, 10, 500, allMovements[i], rob.motorFR, rob.motorFL, rob.motorBR, rob.motorBL);
             }
 
             telemetry.addLine("End");
