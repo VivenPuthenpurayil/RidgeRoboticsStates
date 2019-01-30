@@ -744,15 +744,16 @@ public class Rover {
     }
 
     public Position getCurrentPosition() throws InterruptedException{
-        while(vuforia.checkVisibility().equals("false") && central.opModeIsActive()) {
-        }
+        double orient =0;
+        if(vuforia.checkVisibility().equals("true") && central.opModeIsActive()) {
+
             VectorF translation = vuforia.lastLocation.getTranslation();
 
             Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-
-            return  vuftopos((double)(translation.get(0)/mmPerInch), (double)(translation.get(1)/mmPerInch) ,(double)(translation.get(2) / mmPerInch), rotation.thirdAngle,vuforia.checkVisibility() );
-
-
+orient = rotation.thirdAngle;
+            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle, vuforia.checkVisibility());
+        }
+return currentabspossensors(orient);
         }
     public static Position vuftopos(double xtrans, double ytrans, double ztrans, double orientation, String id) {
         double v[] = new double[3];
@@ -766,7 +767,7 @@ public class Rover {
 
     }
 
-    public  Position currentabspossensors(int orient){
+    public  Position currentabspossensors(double orient){
         //only use when snapped to nearest axis
         double[] w = new double[3];
         if(orient == 90){
@@ -1103,6 +1104,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         }
         return getCurrentPosition();
     }
+
+ 
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
