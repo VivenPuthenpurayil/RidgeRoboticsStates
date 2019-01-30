@@ -889,14 +889,14 @@ public class Rover {
      if(abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
-             driveTrainMovement(0.5, movements.right);
+             driveTrainMovement(0.2, movements.right);
 
          }
      }
      else if(abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()){
-             driveTrainMovement(0.5, movements.left);
+             driveTrainMovement(0.2, movements.left);
 
          }
      }
@@ -904,26 +904,26 @@ public class Rover {
      if(abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
-             driveTrainMovement(0.5, movements.forward);
+             driveTrainMovement(0.2, movements.forward);
 
          }
      }
      else if(abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()){
-             driveTrainMovement(0.5, movements.backward);
+             driveTrainMovement(0.2, movements.backward);
 
          }
      }
      if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
          while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5&& central.opModeIsActive()){
-             driveTrainMovement(0.5,cw);
+             driveTrainMovement(0.2,cw);
          }
 
      }
      else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
          while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5&& central.opModeIsActive()){
-             driveTrainMovement(0.5,movements.ccw);
+             driveTrainMovement(0.2,movements.ccw);
          }
 
      }
