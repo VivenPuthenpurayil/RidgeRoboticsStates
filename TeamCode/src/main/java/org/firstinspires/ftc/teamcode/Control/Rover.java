@@ -1075,7 +1075,7 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
 
         Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()));
-        while (Math.sqrt(Math.pow(Math.abs(getCurrentPosition().returnv()[0] - endpos.returnv()[0]),2)+Math.pow(Math.abs(getCurrentPosition().returnv()[0] - endpos.returnv()[0]),2)) > 3 && central.opModeIsActive()) {
+        while (Math.sqrt(Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]),2)+Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]),2)) > 3 && central.opModeIsActive()) {
 
             if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
 
@@ -1114,7 +1114,7 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         return getCurrentPosition();
     }
 
- 
+
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
