@@ -805,7 +805,7 @@ public class Rover {
 
             Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
 orient = rotation.thirdAngle;
-            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle +90 , vuforia.checkVisibility());
+            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle - 90 , vuforia.checkVisibility());
       /* }
         else {
             double[] v = {0, 0, 0};
@@ -944,7 +944,7 @@ orient = rotation.thirdAngle;
          central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
          central.telemetry.update();
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.right);
+             driveTrainMovement(0.1, movements.right);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -957,7 +957,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.left);
+             driveTrainMovement(0.1, movements.left);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -971,7 +971,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.forward);
+             driveTrainMovement(0.1, movements.forward);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -984,7 +984,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.backward);
+             driveTrainMovement(0.1, movements.backward);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
