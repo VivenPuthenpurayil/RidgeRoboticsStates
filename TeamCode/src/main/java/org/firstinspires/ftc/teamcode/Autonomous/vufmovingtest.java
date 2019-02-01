@@ -15,7 +15,7 @@ public class vufmovingtest extends AutonomousControl {
     public void runOpMode() throws InterruptedException {
         setup(runtime, Rover.setupType.vuforia, Rover.setupType.drive);
         while (opModeIsActive()) {
-            double[] x = {24,12,10};
+            double[] x = {-36,16,10};
             rob.moveusingvuf(new Rover.Position(x,90));
             sleep(10000);
         }
