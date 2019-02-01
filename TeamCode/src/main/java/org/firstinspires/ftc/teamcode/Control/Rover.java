@@ -78,9 +78,12 @@ public class Rover {
                     break;
 
                 case vuforia:
-                    setupVuforia();
+                    setupVuforia(0);
                     break;
 
+                case tensorflow:
+                    setupVuforia(1);
+                    break;
                 case sensors:
                     setupSensors();
                     break;
@@ -91,7 +94,7 @@ public class Rover {
                     setupIMU();
                     setupDrivetrain();
                     setupMineralControl();
-                    setupVuforia();
+                    setupVuforia(1);
                     //setupPhone();
                     //setupSensors();
                     break;
@@ -187,6 +190,7 @@ public class Rover {
     //---- VUFORIA HANDLER  ----
     public VuforiaHandler vuforia;
     public boolean vuforiaMode;
+    public boolean tensorflowMode;
     public float initorient;
 
 
@@ -266,9 +270,17 @@ public class Rover {
         rangeSensorleft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
     }
 
-    public void setupVuforia() {
-        vuforia = new VuforiaHandler(central);
-        vuforiaMode = true;
+    public void setupVuforia(int i) {
+        if (i == 1) {
+            vuforia = new VuforiaHandler(central, VuforiaHandler.type.both);
+            vuforiaMode = true;
+            tensorflowMode = true;
+        }
+        else if (i == 0){
+            vuforia = new VuforiaHandler(central, VuforiaHandler.type.images);
+            vuforiaMode = true;
+        }
+
     }
 
     public void setupDrivetrain() throws InterruptedException {
@@ -610,7 +622,7 @@ public class Rover {
         ON, OFF
     }
     public enum setupType{
-        autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia;
+        autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia, tensorflow;
     }
 
 
@@ -696,15 +708,46 @@ public class Rover {
     }
 
 
-    public double[] anyDirection(double speed, double angleDegrees){
+    public static double[] anyDirection(double speed, double angleDegrees){
         double theta = Math.toRadians(angleDegrees);
-        double beta = Math.atan(7/3);
+        double beta = Math.atan(7.0/3.0);
 
-        double v1 = 84/58 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
-        double v2 = 84/58 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+        double v1 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
+        double v2 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
 
-        double[]retval = {StrafetoTotalPower*v1,StrafetoTotalPower*v2};
+        double[] retval = {v1,v2};
         return retval;
+    }
+    public static double[] anyDirectionRadians(double speed, double angleRadians){
+        double theta = angleRadians;
+        double beta = Math.atan(7.0/3.0);
+
+        double v1 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
+        double v2 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+
+        double[] retval = {v1,v2};
+        return retval;
+    }
+    public void driveTrainMovementAngle(double speed, double angle){
+
+        double[] speeds = anyDirection(speed, angle);
+        for (int i = 0; i < drivetrain.length; i++) {
+            if (i == 0 || i== 4){
+                drivetrain[i].setPower(speeds[1]);
+            }
+            else {
+                drivetrain[i].setPower(speeds[0]);
+            }
+        }
+
+    }
+    public void driveTrainMovementAngleRadians(double speed, double angle){
+
+        double[] speeds = anyDirectionRadians(speed, angle);
+        motorFR.setPower(movements.forward.directions[0] * speeds[0]);
+        motorFL.setPower(movements.forward.directions[1] * speeds[1]);
+        motorBR.setPower(movements.forward.directions[2] * speeds[1]);
+        motorBL.setPower(movements.forward.directions[3] * speeds[0]);
 
     }
 
