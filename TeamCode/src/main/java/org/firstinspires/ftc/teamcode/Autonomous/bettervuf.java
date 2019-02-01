@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
 
-@Autonomous(name="testvufmove", group ="Smart")
+@Autonomous(name="testbetterve", group ="Smart")
 public class bettervuf extends AutonomousControl {
     private ElapsedTime runtime = new ElapsedTime();
 
