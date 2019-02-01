@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Control.Rover;
 
 import java.util.List;
 
+
 @Autonomous(name="Red Crater", group ="Smart")
 
 
@@ -43,7 +44,7 @@ public class RedCrater extends AutonomousControl {
         setup(runtime, Rover.setupType.autonomous);
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-            initTfod();
+           // initTfod();
         } else {
             telemetry.addData("Sorry!", "This device is not compatible with TFOD");
         }
@@ -58,7 +59,7 @@ public class RedCrater extends AutonomousControl {
             while (opModeIsActive()) {
 
                 //rob.deploy();
-
+/*
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -72,14 +73,7 @@ public class RedCrater extends AutonomousControl {
                             for (Recognition recognition : updatedRecognitions) {
                                 if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
                                     goldMineralX = (int) recognition.getLeft();
-                                } else if (silverMineral1X == -1) {
-                                    silverMineral1X = (int) recognition.getLeft();
-                                } else {
-                                    silverMineral2X = (int) recognition.getLeft();
-                                }
-                            }
-
-                            int x =  checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
+                                } int x =  checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
                             telemetry.addData("Value: ", x);
                             switch (x){
                                 case 0:
@@ -137,11 +131,11 @@ public class RedCrater extends AutonomousControl {
     /**
      * Initialize the Vuforia localization engine.
      */
-
+/*
     private void initVuforia() {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
+
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
@@ -152,15 +146,21 @@ public class RedCrater extends AutonomousControl {
 
         // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
     }
-
+*/
     /**
      * Initialize the Tensor Flow Object Detection engine.
-     */
+
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+
+    }
+}
+*/
+            }
+        }
     }
 }
