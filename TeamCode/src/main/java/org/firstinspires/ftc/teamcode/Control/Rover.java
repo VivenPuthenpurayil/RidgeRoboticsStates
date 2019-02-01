@@ -810,6 +810,7 @@ orient = rotation.thirdAngle;
         else {
             double[] v = {0, 0, 0};
             return new Position(v, 0);
+
             */
 //return currentabspossensors(orient);
        // }
