@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public abstract class Test extends Central {
 
-    private DcMotor[] drivetrain;
+
 
     public Rover.movements[] allMovements = {Rover.movements.forward, Rover.movements.backward, Rover.movements.right, Rover.movements.left, Rover.movements.tr, Rover.movements.bl, Rover.movements.tl, Rover.movements.br,Rover.movements.cw, Rover.movements.ccw};
 
@@ -64,23 +64,5 @@ public abstract class Test extends Central {
 
     }
 
-    public void motorDriveMode(Rover.EncoderMode mode, DcMotor... motor) throws InterruptedException {
-        switch (mode) {
-            case ON:
-                for (DcMotor i : motor) {
-                    i.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                }
-                idle();
-                for (DcMotor i : motor) {
-                    i.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                break;
-            case OFF:
-                break;
-        }
-
-        this.drivetrain = motor;
-
-    }
 
 }

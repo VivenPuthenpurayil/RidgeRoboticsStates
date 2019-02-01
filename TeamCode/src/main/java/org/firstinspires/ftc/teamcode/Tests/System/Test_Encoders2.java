@@ -3,21 +3,23 @@ package org.firstinspires.ftc.teamcode.Tests.System;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
 import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
-import org.firstinspires.ftc.teamcode.Control.Test;
 
 
-@Autonomous(name = "Encoder Momements Test", group = "Test")
+@Autonomous(name = "Encoder Momements Test 2", group = "Test")
 
-public class Test_Encoders extends TeleOpControl {
+public class Test_Encoders2 extends TeleOpControl {
 
     private ElapsedTime runtime = new ElapsedTime();
 
 
     public void runOpMode() throws InterruptedException{
-        setup(runtime, Rover.setupType.drive);
+        setRob(new Rover(hardwareMap, runtime, this, Rover.setupType.drive));
+        setRuntime(runtime);
+
+        waitForStart();
+        runtime.reset();
 
 
 
