@@ -805,7 +805,7 @@ public class Rover {
 
             Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
 orient = rotation.thirdAngle;
-            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle, vuforia.checkVisibility());
+            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle +90 , vuforia.checkVisibility());
       /* }
         else {
             double[] v = {0, 0, 0};
