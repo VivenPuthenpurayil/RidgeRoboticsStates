@@ -43,6 +43,8 @@ public class VuforiaHandler {
     public OpenGLMatrix lastLocation = null;
     public boolean targetVisible = false;
     public VuforiaLocalizer vuforia;
+
+
     /**
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
