@@ -18,6 +18,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.opencv.core.Mat;
 
 import java.util.Arrays;
@@ -241,16 +244,16 @@ public class Rover {
     //------        MAPPING FUNCTIONS           --------------
 
     public double rangeDistancefront(){
-        return rangeSensorfront.getDistance(DistanceUnit.CM);
+        return rangeSensorfront.getDistance(DistanceUnit.INCH);
     }
     public double rangeDistanceback(){
-        return rangeSensorback.getDistance(DistanceUnit.CM);
+        return rangeSensorback.getDistance(DistanceUnit.INCH);
     }
     public double rangeDistanceright(){
-        return rangeSensorright.getDistance(DistanceUnit.CM);
+        return rangeSensorright.getDistance(DistanceUnit.INCH);
     }
     public double rangeDistanceleft(){
-        return rangeSensorleft.getDistance(DistanceUnit.CM);
+        return rangeSensorleft.getDistance(DistanceUnit.INCH);
     }
 
 
@@ -315,6 +318,7 @@ public class Rover {
     public void setupMarker() throws InterruptedException{
 
     }
+
 
     public void setupIMU() throws InterruptedException{
         parameters.angleUnit = BNO055IMUImpl.AngleUnit.DEGREES;
@@ -805,11 +809,12 @@ public class Rover {
 
             Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
 orient = rotation.thirdAngle;
-            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle, vuforia.checkVisibility());
+            return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle  , vuforia.checkVisibility());
       /* }
         else {
             double[] v = {0, 0, 0};
             return new Position(v, 0);
+
             */
 //return currentabspossensors(orient);
        // }
@@ -821,7 +826,7 @@ orient = rotation.thirdAngle;
             v[1] = ytrans;
             v[2] = ztrans;
 
-                return new Position(v,orientation);
+                return new Position(v,orientation-90);
 
 
     }
@@ -857,6 +862,7 @@ orient = rotation.thirdAngle;
             }
 
         }
+
         if(orient == -90){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[0] = 72 - rangeDistanceleft();
@@ -943,7 +949,7 @@ orient = rotation.thirdAngle;
          central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
          central.telemetry.update();
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.right);
+             driveTrainMovement(0.1, movements.right);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -956,7 +962,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.left);
+             driveTrainMovement(0.1, movements.left);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -970,7 +976,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.forward);
+             driveTrainMovement(0.1, movements.forward);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -983,7 +989,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
-             driveTrainMovement(0.05, movements.backward);
+             driveTrainMovement(0.1, movements.backward);
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -1187,7 +1193,90 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         }
         return getCurrentPosition();
     }
+    public double paralleloffsetfromimage(Position pos,String id){
+        /*
+        if (setups == VuforiaHandler.type.images || setups == VuforiaHandler.type.both) {
+            // Load the data sets that for the trackable objects. These particular data
+            // sets are stored in the 'assets' part of our application.
+            targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
+            blueRover = targetsRoverRuckus.get(0);
+            blueRover.setName("Blue-Rover");
+            redFootprint = targetsRoverRuckus.get(1);
+            redFootprint.setName("Red-Footprint");
+            frontCraters = targetsRoverRuckus.get(2);
+            frontCraters.setName("Front-Craters");
+            backSpace = targetsRoverRuckus.get(3);
+            backSpace.setName("Back-Space");
+        }
+            // For convenience, gather together all the trackable objects in one easily-iterable collection */
+/*
+            allTrackables.addAll(targetsRoverRuckus);
 
+        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
+        VuforiaTrackable blueRover = targetsRoverRuckus.get(0);
+        blueRover.setName("Blue-Rover");
+        VuforiaTrackable redFootprint = targetsRoverRuckus.get(1);
+        redFootprint.setName("Red-Footprint");
+        VuforiaTrackable frontCraters = targetsRoverRuckus.get(2);
+        frontCraters.setName("Front-Craters");
+        VuforiaTrackable backSpace = targetsRoverRuckus.get(3);
+        backSpace.setName("Back-Space");
+
+        for (VuforiaTrackable trackable : allTrackables) {
+            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                telemetry.addData("Visible Target", trackable.getName());
+            }
+        }
+        */
+
+        if(id == "Blue-Rover"){
+            return Math.abs(pos.returnv()[0]);
+
+        }
+        else if(id == "Red-Footprint"){
+            return Math.abs(pos.returnv()[0]);
+
+
+        }
+        else if(id == "Front-Craters"){
+            return Math.abs(pos.returnv()[1]);
+
+        }
+        else if(id == "Back-Space"){
+            return Math.abs(pos.returnv()[1]);
+
+
+        }
+        else {
+            return 0;
+        }
+    }
+
+    public double perpendiculatoffsetfromimage(Position pos,String id){
+
+        if(id == "Blue-Rover"){
+            return Math.abs(72-pos.returnv()[1]);
+
+        }
+        else if(id == "Red-Footprint"){
+            return Math.abs(-72- pos.returnv()[1]);
+
+
+        }
+        else if(id == "Front-Craters"){
+            return Math.abs(-72-pos.returnv()[0]);
+
+        }
+        else if(id == "Back-Space"){
+            return Math.abs(72-pos.returnv()[0]);
+
+
+        }
+        else {return 0; }
+    }
+    public double turnangleofmount(Position pos,String id){
+        return Math.atan((paralleloffsetfromimage( pos, id)/perpendiculatoffsetfromimage( pos, id)));
+    }
 
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
