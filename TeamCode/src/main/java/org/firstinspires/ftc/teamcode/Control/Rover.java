@@ -834,7 +834,7 @@ orient = rotation.thirdAngle;
     public  Position currentabspossensors(double orient){
         //only use when snapped to nearest axis
         double[] w = new double[3];
-        if(orient == 90){
+        if((orient > 45.0) && (orient <135.0)){
           if(rangeDistanceright() > rangeDistanceleft()){
               w[0] = -72 + rangeDistanceleft();
               w[1] = 72-rangeDistancefront();
@@ -848,7 +848,7 @@ orient = rotation.thirdAngle;
           }
 
         }
-        if(orient == 0){
+        if((orient >= -45.0) && (orient <= 45.0)){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[1] = 72 - rangeDistanceleft();
                 w[0] = 72-rangeDistancefront();
@@ -863,7 +863,7 @@ orient = rotation.thirdAngle;
 
         }
 
-        if(orient == -90){
+        if((orient <= -45.0) && (orient >= -135.0)){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[0] = 72 - rangeDistanceleft();
                 w[1] = -72 + rangeDistancefront();
@@ -877,7 +877,7 @@ orient = rotation.thirdAngle;
             }
 
         }
-        if(orient == 180){
+        if((orient >= -135.0 && orient < 0) && (orient <= 135 && orient >=0)){
             if(rangeDistanceright() > rangeDistanceleft()){
                 w[1] = -72 + rangeDistanceleft();
                 w[0] = -72 + rangeDistancefront();
@@ -1230,20 +1230,20 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         */
 
         if(id == "Blue-Rover"){
-            return Math.abs(pos.returnv()[0]);
+            return pos.returnv()[0];
 
         }
         else if(id == "Red-Footprint"){
-            return Math.abs(pos.returnv()[0]);
+            return -pos.returnv()[0];
 
 
         }
         else if(id == "Front-Craters"){
-            return Math.abs(pos.returnv()[1]);
+            return (pos.returnv()[1]);
 
         }
         else if(id == "Back-Space"){
-            return Math.abs(pos.returnv()[1]);
+            return -pos.returnv()[1];
 
 
         }
@@ -1276,7 +1276,10 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
     }
     public double turnangleofmount(Position pos,String id){
         return Math.atan((paralleloffsetfromimage( pos, id)/perpendiculatoffsetfromimage( pos, id)));
+
     }
+
+
 
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
