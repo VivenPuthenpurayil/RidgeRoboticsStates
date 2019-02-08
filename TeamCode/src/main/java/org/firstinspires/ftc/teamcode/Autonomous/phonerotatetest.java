@@ -6,17 +6,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
 
-@Autonomous(name="testvuf", group ="Smart")
-public class testvufposmove extends AutonomousControl {
+@Autonomous(name="totatemount", group ="Smart")
+public class phonerotatetest extends AutonomousControl {
     private ElapsedTime runtime = new ElapsedTime();
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        setup(runtime, Rover.setupType.vuforia);
+        setup(runtime, Rover.setupType.vuforia, Rover.setupType.drive);
         while (opModeIsActive()) {
-            double[] x = {24,12,10};
-            rob.vufmovetest(new Rover.Position(x,90), 0);
+
+            rob.turntest(rob.vuforia.checkVisibility());
             sleep(10000);
         }
     }

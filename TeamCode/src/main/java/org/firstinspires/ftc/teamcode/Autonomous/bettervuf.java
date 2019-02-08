@@ -16,7 +16,7 @@ public class bettervuf extends AutonomousControl {
         setup(runtime, Rover.setupType.vuforia, Rover.setupType.drive);
         while (opModeIsActive()) {
             double[] x = {-36,16,10};
-            rob.bettermove(new Rover.Position(x,90));
+            rob.bettermove(new Rover.Position(x,90),0);
             sleep(10000);
         }
     }

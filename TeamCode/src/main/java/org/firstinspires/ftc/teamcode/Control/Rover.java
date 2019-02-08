@@ -1064,13 +1064,13 @@ orient = rotation.thirdAngle;
 
     }
 
-    public Position vufmovetest(Position endpos) throws InterruptedException {
+    public Position vufmovetest(Position endpos, double phoneangle) throws InterruptedException {
 
 
         double orientMotorcoord = 0;
         endpos.updateOrient(getCurrentPosition().returno());
 
-        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()));
+        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()-phoneangle));
 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
         central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
         central.telemetry.update();
@@ -1124,8 +1124,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
             central.telemetry.update();
 
         }
-        if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno()) > 5 && central.opModeIsActive()){
+        if(abstomotorCoord(getCurrentPosition()).returno() -phoneangle > endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() -phoneangle - endpos.returno()) > 5 && central.opModeIsActive()){
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
@@ -1136,8 +1136,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
 
         }
-        else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno()) > 5 && central.opModeIsActive()){
+        else if(abstomotorCoord(getCurrentPosition()).returno() -phoneangle < endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() -phoneangle - endpos.returno()) > 5 && central.opModeIsActive()){
                 central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f" , getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1],getCurrentPosition().returno());
                 central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
                 central.telemetry.update();
@@ -1150,11 +1150,11 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
         }
         return getCurrentPosition();
     }
-    public Position bettermove( Position endpos) throws InterruptedException {
+    public Position bettermove( Position endpos, double phoneangle) throws InterruptedException {
         double orientMotorcoord = 0;
 
 
-        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno()));
+        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno() - phoneangle));
         while (Math.sqrt(Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]),2)+Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]),2)) > 3 && central.opModeIsActive()) {
 
             if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
@@ -1179,14 +1179,14 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
             }
         }
-        if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
+        if(abstomotorCoord(getCurrentPosition()).returno() - phoneangle > endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() -phoneangle - endpos.returno())>5){
                 driveTrainMovement(0.5,movements.cw);
             }
 
         }
-        else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - endpos.returno())>5){
+        else if(abstomotorCoord(getCurrentPosition()).returno() -phoneangle < endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - phoneangle - endpos.returno())>5){
                 driveTrainMovement(0.5,movements.ccw);
             }
 
@@ -1272,7 +1272,7 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
 
         }
-        else {return 0; }
+        else {return 1; }
     }
     public double turnangleofmount(Position pos,String id){
         return Math.atan((paralleloffsetfromimage( pos, id)/perpendiculatoffsetfromimage( pos, id)));
@@ -1284,5 +1284,10 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
+    }
+
+    public void turntest(String id) throws InterruptedException {
+        phoneSwivel.setPosition((90+turnangleofmount(getCurrentPosition(),id))/360);
+
     }
 }
