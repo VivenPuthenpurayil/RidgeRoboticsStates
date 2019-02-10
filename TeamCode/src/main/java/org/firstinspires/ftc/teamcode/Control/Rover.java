@@ -103,6 +103,9 @@ public class Rover {
                     break;
 
 
+                case phoneswivel:
+                    setupPhone();
+                    break;
             }
             i.append(type.name()).append(" ");
         }
@@ -134,7 +137,15 @@ public class Rover {
     public Central central;         //set in constructor to the runtime of running class
     public HardwareMap hardwareMap; //set in constructor to the runtime of running class
 
+    
+    public int[] wheelAdjust = {1, 1, 1, 1};
 
+    public void setWheelAdjust(int fr, int fl, int br, int bl){
+        wheelAdjust[0] = fr;
+        wheelAdjust[1] = fl;
+        wheelAdjust[2] = br;
+        wheelAdjust[3] = bl;
+    }
     //----specfic non-configuration fields
     //none rn
 
@@ -419,7 +430,7 @@ public class Rover {
 
             for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
             }
             for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
@@ -475,7 +486,7 @@ public class Rover {
 
             for (DcMotor motor : motors){
                 int x = Arrays.asList(motors).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
             }
             for (DcMotor motor: motors){
                 int x = Arrays.asList(motors).indexOf(motor);
@@ -562,7 +573,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
@@ -576,7 +587,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
         central.sleep(duration);
@@ -588,7 +599,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: motors){
             int x = Arrays.asList(motors).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
@@ -1287,7 +1298,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
     }
 
     public void turntest(String id) throws InterruptedException {
-        phoneSwivel.setPosition((90+turnangleofmount(getCurrentPosition(),id))/360);
-
+        phoneSwivel.setPosition(((Math.toDegrees(turnangleofmount(getCurrentPosition(),id)))/360));
+        central.telemetry.addData("current motor position","{parallel, perpendicular, angle} = %.0f, %.0f, %.0f" , paralleloffsetfromimage(getCurrentPosition(),id), perpendiculatoffsetfromimage(getCurrentPosition(),id),turnangleofmount(getCurrentPosition(),id));
+central.telemetry.update();
     }
 }
