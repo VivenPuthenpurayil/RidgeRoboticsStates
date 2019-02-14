@@ -127,7 +127,7 @@ public class VuforiaServoMove extends AutonomousControl {
                 telemetry.addData(">", "Press Stop to end test.");
 
                 if (image.equals(rob.vuforia.frontCraters.getName()) ||image.equals(rob.vuforia.backSpace.getName())) {
-                    double angle = Math.atan(translation.get(1) / translation.get(0));
+                    double angle = Math.atan(translation.get(1) / (72-Math.abs(translation.get(0))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
@@ -136,7 +136,7 @@ public class VuforiaServoMove extends AutonomousControl {
                     idle();
 
                 }else if(image.equals(rob.vuforia.redFootprint.getName())||image.equals(rob.vuforia.blueRover.getName())) {
-                    double angle = -Math.atan(translation.get(0) / translation.get(1));
+                    double angle = -Math.atan((72-Math.abs(translation.get(0))) / translation.get(1));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
