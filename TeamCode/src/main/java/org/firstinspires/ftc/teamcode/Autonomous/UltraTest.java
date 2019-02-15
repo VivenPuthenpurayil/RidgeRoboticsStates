@@ -27,17 +27,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
- * {@link SensorMRRangeSensor} illustrates how to use the Modern Robotics
+ * {@link UltraTest} illustrates how to use the Modern Robotics
  * Range Sensor.
  *
  * The op mode assumes that the range sensor is configured with a name of "sensor_range".
@@ -47,26 +49,44 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  *
  * @see <a href="http://modernroboticsinc.com/range-sensor">MR Range Sensor</a>
  */
-@TeleOp(name = "Sensor: MR range sensor", group = "Sensor")
-       // comment out or remove this line to enable this opmode
-public class SensorMRRangeSensor extends LinearOpMode {
+@Autonomous(name = "Ultra Test", group = "Smart")
+
+public class UltraTest extends LinearOpMode {
 
     ModernRoboticsI2cRangeSensor rangeSensor;
+    ModernRoboticsI2cRangeSensor rangeSensor2;
+    ModernRoboticsI2cRangeSensor rangeSensor3;
+    ModernRoboticsI2cRangeSensor rangeSensor4;
 
-    @Override public void runOpMode() {
+    private ElapsedTime runtime = new ElapsedTime();
+    @Override
+    public void runOpMode() {
 
         // get a reference to our compass
-        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "FLU");
+        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "FRU");
+        rangeSensor2 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "FLU");
+        rangeSensor3 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "BRU");
+        rangeSensor4 = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "BLU");
 
         // wait for the start button to be pressed
         waitForStart();
+        runtime.reset();
 
         while (opModeIsActive()) {
-            telemetry.addData("raw ultrasonic", rangeSensor.rawUltrasonic());
-            telemetry.addData("raw optical", rangeSensor.rawOptical());
-            telemetry.addData("cm optical", "%.2f cm", rangeSensor.cmOptical());
-            telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("cm optical1", "%.2f cm", rangeSensor.cmOptical());
+            telemetry.addData("cm1", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+
+            telemetry.addData("cm optical2", "%.2f cm", rangeSensor2.cmOptical());
+            telemetry.addData("cm2", "%.2f cm", rangeSensor2.getDistance(DistanceUnit.CM));
+
+            telemetry.addData("cm optical3", "%.2f cm", rangeSensor3.cmOptical());
+            telemetry.addData("cm3", "%.2f cm", rangeSensor3.getDistance(DistanceUnit.CM));
+
+            telemetry.addData("cm optical4", "%.2f cm", rangeSensor4.cmOptical());
+            telemetry.addData("cm4", "%.2f cm", rangeSensor4.getDistance(DistanceUnit.CM));
+
             telemetry.update();
+            sleep(20);
         }
     }
 }

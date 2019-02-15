@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -103,6 +104,9 @@ public class Rover {
                     break;
 
 
+                case phoneswivel:
+                    setupPhone();
+                    break;
             }
             i.append(type.name()).append(" ");
         }
@@ -134,7 +138,26 @@ public class Rover {
     public Central central;         //set in constructor to the runtime of running class
     public HardwareMap hardwareMap; //set in constructor to the runtime of running class
 
+    static final double MAX_POS = 0.6;     // Maximum rotational position
+    static final double MIN_POS = 0.2;     // Minimum rotational position
 
+    private static final float mmPerInch = 25.4f;
+    private static final float mmFTCFieldWidth = (12 * 6) * mmPerInch;       // the width of the FTC field (from the center point to the outer panels)
+    private static final float mmTargetHeight = (6) * mmPerInch;
+
+    double position = 0;
+
+    boolean targetVisible;
+
+
+    public int[] wheelAdjust = {1, 1, 1, 1};
+
+    public void setWheelAdjust(int fr, int fl, int br, int bl){
+        wheelAdjust[0] = fr;
+        wheelAdjust[1] = fl;
+        wheelAdjust[2] = br;
+        wheelAdjust[3] = bl;
+    }
     //----specfic non-configuration fields
     //none rn
 
@@ -192,7 +215,7 @@ public class Rover {
     public static boolean isnotstopped;
 
     //----  PHONE SWIVEL    ----
-    public Servo phoneSwivel;
+    public Servo servo;
 
     //---- VUFORIA HANDLER  ----
     public VuforiaHandler vuforia;
@@ -264,7 +287,7 @@ public class Rover {
     //----          SETUP FUNCTIONS             --------------
 
     public void setupPhone() throws InterruptedException {
-        phoneSwivel = servo(phoneSwivelS, Servo.Direction.FORWARD, 0, 1, 0);
+        servo = servo(phoneSwivelS, Servo.Direction.FORWARD, 0, 1, 0);
 
     }
 
@@ -426,7 +449,7 @@ public class Rover {
 
             for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
             }
             for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
@@ -482,7 +505,7 @@ public class Rover {
 
             for (DcMotor motor : motors){
                 int x = Arrays.asList(motors).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
             }
             for (DcMotor motor: motors){
                 int x = Arrays.asList(motors).indexOf(motor);
@@ -569,7 +592,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
@@ -583,7 +606,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
         central.sleep(duration);
@@ -595,7 +618,7 @@ public class Rover {
         double[] signs = movement.getDirections();
         for (DcMotor motor: motors){
             int x = Arrays.asList(motors).indexOf(motor);
-            motor.setPower(signs[x]* speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
@@ -838,7 +861,7 @@ orient = rotation.thirdAngle;
             v[1] = ytrans;
             v[2] = ztrans;
 
-                return new Position(v,orientation-90);
+                return new Position(v,orientation);// change based on location of phone (0 on left, -90 on front, etc..)
 
 
     }
@@ -962,6 +985,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.right);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -975,6 +999,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.left);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -989,6 +1014,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.forward);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -1002,6 +1028,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.backward);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -1291,6 +1318,44 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
 
     }
 
+    public void phoneSwivel() {
+        String image = "NONE";
+        targetVisible = false;
+        for (VuforiaTrackable trackable : vuforia.allTrackables) {
+            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                targetVisible = true;
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                image = trackable.getName();
+                if (robotLocationTransform != null) {
+                    vuforia.lastLocation = robotLocationTransform;
+                }
+                break;
+            }
+        }
+        if (targetVisible) {
+            // express position (translation) of robot in inches.
+            VectorF translation = vuforia.lastLocation.getTranslation();
+
+            // express the rotation of the robot in degrees.
+            Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+
+            if (image.equals(vuforia.frontCraters.getName()) ||image.equals(vuforia.backSpace.getName())) {
+                double angle = Math.atan(translation.get(1) / (72-Math.abs(translation.get(0))));
+                position = angle / Math.PI;
+                servo.setPosition(0.4 + position);
+                central.sleep(100);
+                central.idle();
+
+            }else if(image.equals(vuforia.redFootprint.getName())||image.equals(vuforia.blueRover.getName())) {
+                double angle = -Math.atan((72-Math.abs(translation.get(0))) / translation.get(1));
+                position = angle / Math.PI;
+                servo.setPosition(0.4 + position);
+                central.sleep(100);
+                central.idle();
+
+            }
+        }
+    }
 
 
     //-------------------------------------Sensors-------------------------------------------
@@ -1299,7 +1364,8 @@ central.telemetry.addData("current position","{x, y, orient} = %.0f, %.0f, %.0f"
     }
 
     public void turntest(String id) throws InterruptedException {
-        phoneSwivel.setPosition((90+turnangleofmount(getCurrentPosition(),id))/360);
-
+        servo.setPosition(((Math.toDegrees(turnangleofmount(getCurrentPosition(),id)))/360));
+        central.telemetry.addData("current motor position","{parallel, perpendicular, angle} = %.0f, %.0f, %.0f" , paralleloffsetfromimage(getCurrentPosition(),id), perpendiculatoffsetfromimage(getCurrentPosition(),id),turnangleofmount(getCurrentPosition(),id));
+central.telemetry.update();
     }
 }
