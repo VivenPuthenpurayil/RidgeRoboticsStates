@@ -849,7 +849,7 @@ orient = rotation.thirdAngle;
             v[1] = ytrans;
             v[2] = ztrans;
 
-                return new Position(v,orientation-90);
+                return new Position(v,orientation);// change based on location of phone (0 on left, -90 on front, etc..)
 
 
     }
@@ -973,6 +973,7 @@ orient = rotation.thirdAngle;
          central.telemetry.update();
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.right);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -986,6 +987,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.left);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -1000,6 +1002,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.forward);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
@@ -1013,6 +1016,7 @@ orient = rotation.thirdAngle;
 
          while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()){
              driveTrainMovement(0.1, movements.backward);
+             phoneSwivel();
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1],abstomotorCoord(getCurrentPosition()).returno());
              central.telemetry.addData("current motor position","{x, y, orient} = %.0f, %.0f, %.0f" , end.returnv()[0], end.returnv()[1],end.returno());
              central.telemetry.update();
