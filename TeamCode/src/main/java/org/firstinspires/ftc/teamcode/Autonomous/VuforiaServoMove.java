@@ -72,7 +72,7 @@ public class VuforiaServoMove extends AutonomousControl {
 
     // Define class members
     Servo servo;
-    double position = 0; // Start at halfway position
+    double position = 0;
 
     boolean targetVisible;
 
