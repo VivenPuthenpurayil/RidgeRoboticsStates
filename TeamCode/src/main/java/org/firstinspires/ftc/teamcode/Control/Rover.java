@@ -163,6 +163,10 @@ public class Rover {
     public DcMotor motorFL;
     public DcMotor motorBR;
     public DcMotor motorBL;
+    public DcMotor leftshooter;
+    public DcMotor rightshooter;
+    public DcMotor collector1;
+
 
     public double StrafetoTotalPower = 2/3;
     public double mecanumAngle = 36; //from forwards, in degrees
@@ -291,6 +295,9 @@ public class Rover {
         motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD);
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
+        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
+        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
+        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
 
         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
@@ -608,7 +615,12 @@ public class Rover {
             motor.setPower(0);
         }
     }
+public void shoot(){
 
+        
+
+
+}
     public void sample() {
         if (sampleStatus==SamplingOrder.UNCHECKED) {
             //Sample
