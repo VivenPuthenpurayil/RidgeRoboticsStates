@@ -233,6 +233,7 @@ public class Rover {
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     VuforiaLocalizer vuf;
     private OpenGLMatrix lastLocation = null;
+    private static final String VUFORIA_KEY = " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
     private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
     private VectorF translation;//after you call updatetransorient these will update with the position/rotation if it sees a marker, otherwise it just doesnt change it
