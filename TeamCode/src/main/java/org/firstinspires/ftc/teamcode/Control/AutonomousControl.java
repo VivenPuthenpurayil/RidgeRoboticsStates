@@ -58,14 +58,7 @@ public abstract class AutonomousControl extends Central {
     public void centerPosition() throws InterruptedException {
         rob.vuforia.checkVisibility();
         VectorF translation = rob.vuforia.lastLocation.getTranslation();
-        telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-        // express the rotation of the robot in degrees.
         Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-        telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
-        telemetry.update();
         if (!((translation.get(0) > 50)&&(translation.get(0) < 55))) {
             rob.driveTrainMovement(0.2, Rover.movements.right);
         } else {
@@ -77,14 +70,7 @@ public abstract class AutonomousControl extends Central {
     public void leftPosition() throws InterruptedException {
         rob.vuforia.checkVisibility();
         VectorF translation = rob.vuforia.lastLocation.getTranslation();
-        telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-        // express the rotation of the robot in degrees.
         Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-        telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
-        telemetry.update();
         if (!((translation.get(0) > 30)&&(translation.get(0) < 35))) {
             rob.driveTrainMovement(0.2, Rover.movements.right);
         } else {
@@ -96,13 +82,7 @@ public abstract class AutonomousControl extends Central {
     public void rightPosition() throws InterruptedException {
         rob.vuforia.checkVisibility();
         VectorF translation = rob.vuforia.lastLocation.getTranslation();
-        telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-        // express the rotation of the robot in degrees.
         Orientation rotation = Orientation.getOrientation(rob.vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-        telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
         telemetry.update();
         if (!((translation.get(0) > 70)&&(translation.get(0) < 75))) {
             rob.driveTrainMovement(0.2, Rover.movements.right);
@@ -168,6 +148,8 @@ public abstract class AutonomousControl extends Central {
         }
 
     }
+
+
 
 
 

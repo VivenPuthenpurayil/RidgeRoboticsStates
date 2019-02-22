@@ -822,7 +822,13 @@ public void shoot(){
         forward2(1, -1),
         back2(-1, 1),
         cw2(1,1),
-        ccw2(-1, -1);
+        ccw2(-1, -1),
+        linearOut(-1),
+        linearIn(1),
+        armUp(1),
+        armDown(-1),
+        collectorEject(1);
+
 
 
         private final double[] directions;
