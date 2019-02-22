@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -176,8 +177,10 @@ public class Rover {
 
 
 
-
-
+    //---- ARM ----------
+    AnalogInput armPotentiometer = hardwareMap.analogInput.get("potentiometer");
+    private double maxPotentiometerVal = 5;
+    private double minPotentiometerVal = 0;
     //----  MAPPING         ----
     ModernRoboticsI2cRangeSensor rangeSensorfront;
     ModernRoboticsI2cRangeSensor rangeSensorback;
@@ -723,7 +726,7 @@ public class Rover {
             motor.setPower(0);
         }
     }
-public void shoot(){
+    public void shoot(){
 
         
 
@@ -739,7 +742,12 @@ public void shoot(){
 
     }
 
-
+    public void armMoveUp(){
+        arm.setPower(1-Math.abs((armPotentiometer.getVoltage()-minPotentiometerVal)/(maxPotentiometerVal-minPotentiometerVal)-1));
+    }
+    public void armMoveDown(){
+        arm.setPower(Math.abs((armPotentiometer.getVoltage()-minPotentiometerVal)/(maxPotentiometerVal-minPotentiometerVal)-1)-1);
+    }
     //ENUMERATIONS
 
     public enum EncoderMode{
