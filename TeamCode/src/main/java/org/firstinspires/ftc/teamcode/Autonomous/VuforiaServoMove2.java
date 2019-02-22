@@ -2,8 +2,6 @@
 
 package org.firstinspires.ftc.teamcode.Autonomous;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -12,7 +10,6 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
 import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
 
@@ -21,8 +18,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.teamcode.Control.Constants.ROTATION_SPEED;
 
-@TeleOp(name = "Vuforia Servo", group = "Concept")
-public class VuforiaServoMove extends TeleOpControl {
+@TeleOp(name = "Vuforia Servo No Action", group = "Concept")
+public class VuforiaServoMove2 extends TeleOpControl {
 
     static final double MAX_POS = 0.6;     // Maximum rotational position
     static final double MIN_POS = 0.2;     // Minimum rotational position
@@ -92,36 +89,28 @@ public class VuforiaServoMove extends TeleOpControl {
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
-                    servo.setPosition(0.47 + position /* + (Math.toDegrees(angle) - rotation.thirdAngle)/180*/);
                     sleep(100);
-                    idle();
 
                 }else if(image.equals(rob.vuforia.blueRover.getName())) {
                     double angle = Math.atan(translation.get(0) / (72-Math.abs(translation.get(1))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
-                    servo.setPosition(0.47 + position /*(Math.toDegrees(angle) - (90-rotation.thirdAngle))/180*/);
                     sleep(100);
-                    idle();
 
                 }else if (image.equals(rob.vuforia.backSpace.getName())) {
                     double angle = -Math.atan(translation.get(1) / (72-Math.abs(translation.get(0))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
-                    servo.setPosition(0.47 + position /*(Math.toDegrees(angle)- rotation.thirdAngle)/180*/);
                     sleep(100);
-                    idle();
 
                 }else if(image.equals(rob.vuforia.redFootprint.getName())) {
                     double angle = -Math.atan(translation.get(0) / (72-Math.abs(translation.get(1))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
                     position = angle / Math.PI;
-                    servo.setPosition(0.47 + position /*(Math.toDegrees(angle) - (90-rotation.thirdAngle))/180*/);
                     sleep(100);
-                    idle();
 
                 }
             }
@@ -184,7 +173,7 @@ public class VuforiaServoMove extends TeleOpControl {
                 rob.stopDrivetrain();
             }
 
-
+            
 
         }
     }

@@ -114,45 +114,48 @@ public class ConceptTensorFlowObjectDetection extends AutonomousControl {
                     // the last time that call was made.
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                     if (updatedRecognitions != null) {
-                      telemetry.addData("# Object Detected", updatedRecognitions.size());
-                      if (updatedRecognitions.size() == 2) {
-                        int goldMineralX = -1;
-                        int silverMineral1X = -1;
-                        int silverMineral2X = -1;
-                        for (Recognition recognition : updatedRecognitions) {
-                          if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                            goldMineralX = (int) recognition.getLeft();
-                          } else if (silverMineral1X == -1) {
-                            silverMineral1X = (int) recognition.getLeft();
-                          } else {
-                            silverMineral2X = (int) recognition.getLeft();
-                          }
-                        }
+                        telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        if (updatedRecognitions.size() == 2) {
+                            int goldMineralX = -1;
+                            int silverMineral1X = -1;
+                            int silverMineral2X = -1;
+                            for (Recognition recognition : updatedRecognitions) {
+                                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                    goldMineralX = (int) recognition.getLeft();
+                                } else if (silverMineral1X == -1) {
+                                    silverMineral1X = (int) recognition.getLeft();
+                                } else {
+                                    silverMineral2X = (int) recognition.getLeft();
+                                }
+                            }
 
-                        int x =  checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
-                        telemetry.addData("Value: ", x);
-                        switch (x){
-                            case 0:
-                                telemetry.addData("Gold Mineral Position", "Right");
-                                break;
-                            case 1:
-                                if (goldMineralX < silverMineral2X){
-                                    telemetry.addData("Gold Mineral Position", "Left");
-                                }
-                                else{
-                                    telemetry.addData("Gold Mineral Position", "Center");
-                                }
-                            case 2:
-                                if (goldMineralX < silverMineral1X){
-                                    telemetry.addData("Gold Mineral Position", "Left");
-                                }
-                                else{
-                                    telemetry.addData("Gold Mineral Position", "Center");
-                                }
-                            default:
-                                telemetry.addLine("no clue b");
-                                break;
-                        }
+                            int x =  checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
+                            telemetry.addLine(String.format("{%s, %s, %s}: ", goldMineralX, silverMineral1X, silverMineral2X));
+                            telemetry.addData("Value: ", x);
+                            switch (x){
+                                case 0:
+                                    telemetry.addData("Gold Mineral Position", "Right");
+                                    break;
+                                case 1:
+                                    if (goldMineralX < silverMineral2X){
+                                        telemetry.addData("Gold Mineral Position", "Left");
+                                    }
+                                    else{
+                                        telemetry.addData("Gold Mineral Position", "Center");
+                                    }
+                                    break;
+                                case 2:
+                                    if (goldMineralX < silverMineral1X){
+                                        telemetry.addData("Gold Mineral Position", "Left");
+                                    }
+                                    else{
+                                        telemetry.addData("Gold Mineral Position", "Center");
+                                    }
+                                    break;
+                                default:
+                                    telemetry.addLine("no clue b");
+                                    break;
+                            }
 
                         /*
                         if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
@@ -164,8 +167,8 @@ public class ConceptTensorFlowObjectDetection extends AutonomousControl {
                             telemetry.addData("Gold Mineral Position", "Center");
                           }
                         }*/
-                      }
-                      telemetry.update();
+                        }
+                        telemetry.update();
                     }
                 }
             }
