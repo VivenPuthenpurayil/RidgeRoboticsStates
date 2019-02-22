@@ -13,9 +13,20 @@ public class servotest extends AutonomousControl {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        setup(runtime, Rover.setupType.phoneswivel);
+        setup(runtime,  Rover.setupType.phoneswivel);
+
         while (opModeIsActive()) {
-        //   rob..setPosition(0.3);
+            rob.servo.setPosition(0);
+             sleep(1000);
+                rob.servo.setPosition(0.3);
+                sleep(1000);
+                rob.servo.setPosition(0.5);
+                sleep(1000);
+                rob.servo.setPosition(0.8);
+                sleep(1000);
+                rob.servo.setPosition(1);
+                sleep(1000);
+
         }
     }
 }

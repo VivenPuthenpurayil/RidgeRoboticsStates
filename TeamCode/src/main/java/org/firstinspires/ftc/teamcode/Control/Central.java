@@ -20,7 +20,7 @@ public abstract class Central extends LinearOpMode {
         this.waitForStart();
         this.runtime.reset();
         if (rob.vuforiaMode){
-            rob.vuforia.targetsRoverRuckus.activate();
+        //    rob.vuforia.targetsRoverRuckus.activate();
         }
         if (rob.tensorflowMode){
             rob.vuforia.tfod.activate();

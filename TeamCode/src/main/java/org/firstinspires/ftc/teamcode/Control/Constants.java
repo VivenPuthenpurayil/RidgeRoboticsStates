@@ -60,7 +60,7 @@ public class Constants {
     public static final String imuS = "imu";
 
 
-    public static final String phoneSwivelS = "phoneSwivel";
+    public static final String phoneSwivelS = "servo";
     public static final String linearS = "linear";
 
     public static final String collectorS = "collector";

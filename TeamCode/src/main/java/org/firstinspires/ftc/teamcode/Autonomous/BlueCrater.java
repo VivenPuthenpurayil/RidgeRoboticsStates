@@ -20,7 +20,7 @@ public class BlueCrater extends AutonomousControl {
             telemetry.addLine("Deploy time");
             telemetry.update();
             rob.deploy();
-            sampling();
+            //sampling();
 
             break;
 
