@@ -12,32 +12,22 @@ public class SuperStrafeTmTest extends TeleOpControl {
         private ElapsedTime runtime = new ElapsedTime();
         public void runOpMode() throws InterruptedException{
 
-            setup(runtime/*,Rover.setupType.drive, Rover.setupType.latching*/, Rover.setupType.imu);
+            setup(runtime,Rover.setupType.drive, Rover.setupType.imu);
 
 
             while (opModeIsActive()) {
 
                 // GAMEPAD OBJECT
                 standardGamepadData();
-                telemetry.addData("1:",rob.superstrafe(Math.toDegrees(Math.atan(yAxis1/xAxis1)),Math.sqrt(yAxis1*yAxis1+(xAxis1*xAxis1)),xAxis2)[0]);
-                telemetry.addData("2:",rob.superstrafe(Math.toDegrees(Math.atan(yAxis1/xAxis1)),Math.sqrt(yAxis1*yAxis1+(xAxis1*xAxis1)),xAxis2)[1]);
 
-                /*if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
-                    rob.superstrafe(Math.toDegrees(Math.atan(yAxis1/xAxis1)),Math.sqrt(yAxis1*yAxis1+(xAxis1*xAxis1)),xAxis2);
+
+                if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
+                    telemetry.addData("1:",rob.superstrafe(Math.toDegrees(Math.atan(yAxis1/xAxis1)),Math.sqrt(yAxis1*yAxis1+(xAxis1*xAxis1)),xAxis2)[0]);
+                    telemetry.addData("2:",rob.superstrafe(Math.toDegrees(Math.atan(yAxis1/xAxis1)),Math.sqrt(yAxis1*yAxis1+(xAxis1*xAxis1)),xAxis2)[1]);
                 } else {
                     rob.stopDrivetrain();
                 }
 
-
-                if(gamepad1.a){
-                    rob.rack.setPower(1);
-                }
-                else if (gamepad1.y){
-                    rob.rack.setPower(-1);
-                }
-                else {
-                    rob.rack.setPower(0);
-                }*/
             }
         }
 }
