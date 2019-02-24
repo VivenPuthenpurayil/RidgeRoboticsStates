@@ -91,7 +91,7 @@ public class VuforiaServoMove extends TeleOpControl {
                     double angle = Math.atan(translation.get(1) / (72-Math.abs(translation.get(0))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
-                    position = angle / Math.PI;
+                    position = angle / Math.toRadians(300);
                     servo.setPosition(0.47 + position /* + (Math.toDegrees(angle) - rotation.thirdAngle)/180*/);
                     sleep(100);
                     idle();
@@ -100,7 +100,7 @@ public class VuforiaServoMove extends TeleOpControl {
                     double angle = Math.atan(translation.get(0) / (72-Math.abs(translation.get(1))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
-                    position = angle / Math.PI;
+                    position = angle / Math.toRadians(300);
                     servo.setPosition(0.47 + position /*(Math.toDegrees(angle) - (90-rotation.thirdAngle))/180*/);
                     sleep(100);
                     idle();
@@ -109,7 +109,7 @@ public class VuforiaServoMove extends TeleOpControl {
                     double angle = -Math.atan(translation.get(1) / (72-Math.abs(translation.get(0))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
-                    position = angle / Math.PI;
+                    position = angle / Math.toRadians(300);
                     servo.setPosition(0.47 + position /*(Math.toDegrees(angle)- rotation.thirdAngle)/180*/);
                     sleep(100);
                     idle();
@@ -118,7 +118,7 @@ public class VuforiaServoMove extends TeleOpControl {
                     double angle = -Math.atan(translation.get(0) / (72-Math.abs(translation.get(1))));
                     telemetry.addData("Angle: ", Math.toDegrees(angle));
                     telemetry.update();
-                    position = angle / Math.PI;
+                    position = angle / Math.toRadians(300);
                     servo.setPosition(0.47 + position /*(Math.toDegrees(angle) - (90-rotation.thirdAngle))/180*/);
                     sleep(100);
                     idle();
