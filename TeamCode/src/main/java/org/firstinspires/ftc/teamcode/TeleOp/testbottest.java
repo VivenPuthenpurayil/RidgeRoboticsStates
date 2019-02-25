@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
 import static org.firstinspires.ftc.teamcode.Control.Constants.ROTATION_SPEED;
 
 
-@TeleOp(name = "Testbot", group = "Smart")
+@TeleOp(name = "Testbot stuf", group = "Smart")
 
 public class testbottest extends TeleOpControl {
 
