@@ -125,7 +125,7 @@ public class Rover {
     }
 
     public void setupLatchingTele() throws InterruptedException {
-        rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
+        rack = motor(rackS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
         deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
         latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
@@ -333,13 +333,13 @@ public class Rover {
     }
 
     public void setupDrivetrain() throws InterruptedException {
-        motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD);
-        motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD);
-        motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD);
-        motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
-        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
-        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
-        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD);
+        motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
 
 
@@ -350,7 +350,7 @@ public class Rover {
         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
     public void setupLatching() throws InterruptedException {
-        rack = motor(rackS, DcMotorSimple.Direction.FORWARD);
+        rack = motor(rackS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
         deployingLimit = hardwareMap.digitalChannel.get(deployingLimitS);//name it limit in config pls <3
         latchingLimit = hardwareMap.digitalChannel.get(latchingLimitS);
@@ -361,9 +361,10 @@ public class Rover {
     }
 
     public void setupMineralControl() throws InterruptedException{
-        arm = motor(armS, DcMotorSimple.Direction.FORWARD);
-        linear = motor(linearS, DcMotorSimple.Direction.FORWARD);
-        collector = motor(collectorS, DcMotorSimple.Direction.FORWARD);
+        arm = motor(armS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
+
+        linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        collector = motor(collectorS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
 
         encoder(EncoderMode.ON, arm, linear);
@@ -391,9 +392,10 @@ public class Rover {
     }
 
     //-----------------------HARDWARE SETUP FUNCTIONS---------------------------------------
-    public DcMotor motor(String name, DcMotor.Direction direction) throws InterruptedException {
+    public DcMotor motor(String name, DcMotor.Direction directionm, DcMotor.ZeroPowerBehavior zeroPowerBehavior) throws InterruptedException {
         DcMotor motor = hardwareMap.dcMotor.get(name);
         motor.setDirection(DcMotor.Direction.FORWARD);
+        motor.setZeroPowerBehavior(zeroPowerBehavior);
         motor.setPower(0);
         return motor;
     }
@@ -765,7 +767,13 @@ public class Rover {
         forward2(1, -1),
         back2(-1, 1),
         cw2(1,1),
-        ccw2(-1, -1);
+        ccw2(-1, -1),
+        linearOut(-1),
+        linearIn(1),
+        armUp(1),
+        armDown(-1),
+        collectorEject(1);
+
 
 
         private final double[] directions;
