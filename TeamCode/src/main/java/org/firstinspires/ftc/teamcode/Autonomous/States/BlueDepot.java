@@ -56,7 +56,7 @@ public class BlueDepot extends AutonomousControl {
             telemetry.addLine("Deploy time");
             telemetry.update();
             rob.deploy();
-            initVuforia();
+            rob.turn(90, Rover.turnside.ccw, 0.3, Rover.axis.center);
 
             if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
                 initTfod();
@@ -129,7 +129,6 @@ public class BlueDepot extends AutonomousControl {
                     }
 
                     rob.driveTrainEncoderMovement(0.5, 5, 1, 300, Rover.movements.left);
-                    rob.turn(90, Rover.turnside.ccw, 0.3, Rover.axis.center);
 
                     switch (o) {
                         case left:

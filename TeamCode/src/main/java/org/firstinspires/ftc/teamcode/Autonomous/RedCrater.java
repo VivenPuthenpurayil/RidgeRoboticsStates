@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.Control.Rover;
 import java.util.List;
 
 
-@Autonomous(name="Red Crater", group ="Smart")
+@Autonomous(name="Red Crater not right", group ="Smart")
 
 
 
