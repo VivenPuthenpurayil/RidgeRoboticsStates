@@ -10,10 +10,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -24,8 +21,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.opencv.core.Mat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,18 +28,16 @@ import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 import static org.firstinspires.ftc.teamcode.Control.Constants.COUNTS_PER_INCH;
-import static org.firstinspires.ftc.teamcode.Control.Constants.COUNTS_PER_MOTOR_NEVEREST;
+import static org.firstinspires.ftc.teamcode.Control.Constants.COUNTS_PER_MOTOR_REV;
 import static org.firstinspires.ftc.teamcode.Control.Constants.armS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.collectorS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.deployingLimitS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.imuS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.latchingLimitS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.linearS;
-import static org.firstinspires.ftc.teamcode.Control.Constants.mmPerInch;
 import static org.firstinspires.ftc.teamcode.Control.Constants.motorBLS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.motorBRS;
 import static org.firstinspires.ftc.teamcode.Control.Constants.motorFLS;
@@ -55,9 +48,7 @@ import static org.firstinspires.ftc.teamcode.Control.Rover.movements.backward;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.ccw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.cw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward;
-import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward2;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.left;
-import static org.firstinspires.ftc.teamcode.Control.Rover.movements.right;
 
 public class Rover {
 
@@ -279,9 +270,9 @@ public class Rover {
         rack.setPower(0);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         //while(Math.absimu.getAcceleration())
-        driveTrainTimeMovement(0.3, backward, 700, 50);
-        driveTrainTimeMovement(0.8, left, 300, 50);
         driveTrainTimeMovement(0.3, forward, 700, 50);
+        driveTrainTimeMovement(0.5, left, 300, 50);
+        driveTrainTimeMovement(0.3, backward, 700, 50);
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
@@ -476,7 +467,7 @@ public class Rover {
 
             for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
-                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_NEVEREST);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_REV);
             }
             for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);

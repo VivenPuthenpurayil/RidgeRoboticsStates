@@ -45,7 +45,7 @@ public class BlueCrater extends AutonomousControl {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.tensorflow, Rover.setupType.imu);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu);
 
         rob.servo.setPosition(0.43);
 
@@ -54,8 +54,9 @@ public class BlueCrater extends AutonomousControl {
             telemetry.addLine("Deploy time");
             telemetry.update();
             rob.deploy();
-            rob.turn(90, Rover.turnside.ccw, 0.3, Rover.axis.center);
+            rob.turn(90, Rover.turnside.cw, 0.3, Rover.axis.center);
 
+            initVuforia();
 
             if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
                 initTfod();
@@ -66,7 +67,7 @@ public class BlueCrater extends AutonomousControl {
 
             if (opModeIsActive()) {
                 /** Activate Tensor Flow Object Detection. */
-                if (tfod != null) {
+                if (rob.vuforia.tfod != null) {
                     tfod.activate();
                 }
 
