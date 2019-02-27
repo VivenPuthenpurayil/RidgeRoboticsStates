@@ -49,6 +49,9 @@ public class VuforiaHandler {
      * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
      * localization engine.
      */
+    public enum cameraChoice{
+        phone, webcam;
+    }
     public enum type{
         images, minerals, both;
     }
