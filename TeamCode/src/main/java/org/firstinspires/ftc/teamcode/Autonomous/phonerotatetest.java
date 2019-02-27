@@ -15,9 +15,9 @@ public class phonerotatetest extends AutonomousControl {
     public void runOpMode() throws InterruptedException {
         setup(runtime, Rover.setupType.vuforia, Rover.setupType.phoneswivel);
         while (opModeIsActive()) {
-
-            rob.turntest(rob.vuforia.checkVisibility());
-            sleep(50);
+rob.phoneSwivel();
+            telemetry.addData("orient %f",  rob.offsetservo());
+            sleep(500);
         }
     }
 }

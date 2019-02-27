@@ -1033,7 +1033,7 @@ public class Rover {
         double orientMotorcoord = 0;
         phoneSwivel();
 
-        Position end = abstomotorCoord(new Position(endpos.returnv(),getCurrentPosition().returno() + (servo.getPosition()-0.47)*300 ));
+        Position end = abstomotorCoord(new Position(endpos.returnv(), offsetservo()));
 
         if(abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
 
@@ -1093,13 +1093,13 @@ public class Rover {
             }
         }
         if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - turnangleofmount(getCurrentPosition(),vuforia.checkVisibility()) - endpos.returno())>5&& central.opModeIsActive()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - - ((servo.getPosition()-0.47)*150) - endpos.returno())>5&& central.opModeIsActive()){
                 driveTrainMovement(0.2,cw);
             }
 
         }
         else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
-            while(Math.abs((abstomotorCoord(getCurrentPosition()).returno()- turnangleofmount(getCurrentPosition(),vuforia.checkVisibility())) - endpos.returno())>5&& central.opModeIsActive()){
+            while(Math.abs((abstomotorCoord(getCurrentPosition()).returno() - ((servo.getPosition()-0.47)*150)) - endpos.returno())>5&& central.opModeIsActive()){
                 driveTrainMovement(0.2,ccw);
             }
 
@@ -1481,7 +1481,10 @@ public class Rover {
 
 
     }
+    public double offsetservo() throws InterruptedException {
+        return getCurrentPosition().returno() - ((servo.getPosition()-0.47)*150);
 
+    }
 
 
     //-------------------------------------Sensors-------------------------------------------

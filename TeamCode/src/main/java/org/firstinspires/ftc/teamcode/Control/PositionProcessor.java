@@ -30,9 +30,10 @@ public class PositionProcessor {
         lastPoint = new Point(translation, orientation, value);
     }
 
-    public void phoneMountAngle(){
+    public double phoneMountAngle(){
         switch (lastPoint.ref){
 
         }
+        return 0;
     }
 }
