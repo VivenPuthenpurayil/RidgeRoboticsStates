@@ -270,9 +270,10 @@ public class Rover {
         rack.setPower(0);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         //while(Math.absimu.getAcceleration())
-        driveTrainTimeMovement(0.3, forward, 700, 50);
-        driveTrainTimeMovement(0.5, left, 300, 50);
-        driveTrainTimeMovement(0.3, backward, 700, 50);
+        driveTrainEncoderMovement(0.3, 0.5, 5, 0, forward);
+        driveTrainEncoderMovement(0.5, 1, 5, 0, left);
+        driveTrainEncoderMovement(0.3, 0.75, 5, 0, backward);
+
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
@@ -589,13 +590,13 @@ public class Rover {
 
         double start = getDirection();
 
-        double end = (start + ((direction != turnside.cw) ? target : -target) + 360)%360;
+        double end = (start + ((direction == turnside.cw) ? target : -target) + 360)%360;
 
         isnotstopped = true;
         try {
             switch (rotation_Axis) {
                 case center:
-                    driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
+                    driveTrainMovement(speed, (direction != turnside.cw) ? cw : ccw);
                     break;
                 case back:
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
