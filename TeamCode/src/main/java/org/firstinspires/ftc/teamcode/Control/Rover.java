@@ -225,6 +225,8 @@ public class Rover {
     public float initorient;
 
     //---- VUFORIA POSITIONING
+
+    PositionProcessor processor;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     VuforiaLocalizer vuf;
     private OpenGLMatrix lastLocation = null;
@@ -322,16 +324,15 @@ public class Rover {
         }
 
     }
+    public void setupPositionProcessing(){
+        processor = new PositionProcessor();
+    }
 
     public void setupDrivetrain() throws InterruptedException {
         motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-
 
 
 
@@ -1450,6 +1451,35 @@ public class Rover {
             rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
         }
         */
+    }
+    public void phoneCheck() throws InterruptedException {
+        String value = vuforia.checkVisibility();
+
+        switch (value){
+            case "false":
+                central.telemetry.addLine("No Visible Image");
+                central.telemetry.update();
+                break;
+            default:
+                VectorF translation = vuforia.lastLocation.getTranslation();
+                central.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+
+                // express the rotation of the robot in degrees.
+                Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+                central.telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
+
+                processor.vuforiaInput(translation, rotation, value);
+                servo.setPosition(processor.phoneMountAngle());
+                break;
+        }
+        if (targetVisible) {
+
+
+        }
+
+
+
     }
 
 
