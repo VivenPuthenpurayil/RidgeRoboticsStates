@@ -150,6 +150,8 @@ public class BlueDepotSensor extends AutonomousControl {
                     rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armDown, rob.arm);
 
 
+
+
                 }
 
             }

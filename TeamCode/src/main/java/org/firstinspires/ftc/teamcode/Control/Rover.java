@@ -174,10 +174,11 @@ public class Rover {
     private double maxPotentiometerVal = 5;
     private double minPotentiometerVal = 0;
     //----  MAPPING         ----
-    ModernRoboticsI2cRangeSensor rangeSensorfront;
-    ModernRoboticsI2cRangeSensor rangeSensorback;
-    ModernRoboticsI2cRangeSensor rangeSensorright;
-    ModernRoboticsI2cRangeSensor rangeSensorleft;
+    ModernRoboticsI2cRangeSensor FRU;
+    ModernRoboticsI2cRangeSensor FLU;
+    ModernRoboticsI2cRangeSensor BCU;
+    ModernRoboticsI2cRangeSensor BRU;
+    ModernRoboticsI2cRangeSensor BLU;
 
 
     //----  DRIVE           ----
@@ -225,8 +226,6 @@ public class Rover {
     public float initorient;
 
     //---- VUFORIA POSITIONING
-
-    PositionProcessor processor;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     VuforiaLocalizer vuf;
     private OpenGLMatrix lastLocation = null;
@@ -283,17 +282,20 @@ public class Rover {
 
     //------        MAPPING FUNCTIONS           --------------
 
-    public double rangeDistancefront(){
-        return rangeSensorfront.getDistance(DistanceUnit.INCH);
+    public double rangeDistanceFRU(){
+        return FRU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceback(){
-        return rangeSensorback.getDistance(DistanceUnit.INCH);
+    public double rangeDistanceFLU(){
+        return FLU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceright(){
-        return rangeSensorright.getDistance(DistanceUnit.INCH);
+    public double rangeDistanceBRU(){
+        return BRU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceleft(){
-        return rangeSensorleft.getDistance(DistanceUnit.INCH);
+    public double rangeDistanceBLU(){
+        return BLU.getDistance(DistanceUnit.INCH);
+    }
+    public double rangeDistanceBCU(){
+        return BCU.getDistance(DistanceUnit.INCH);
     }
 
 
@@ -306,11 +308,12 @@ public class Rover {
 
     public void setupSensors() {
 
-        rangeSensorfront = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
-        rangeSensorback = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
 
-        rangeSensorright = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
-        rangeSensorleft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
+        FRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
+        FLU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
+
+        BCU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
+        BRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
     }
 
     public void setupVuforia(int i) {
@@ -325,15 +328,16 @@ public class Rover {
         }
 
     }
-    public void setupPositionProcessing(){
-        processor = new PositionProcessor();
-    }
 
     public void setupDrivetrain() throws InterruptedException {
         motorFR = motor(motorFRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+
 
 
 
@@ -923,7 +927,7 @@ public class Rover {
 
 
     }
-
+    /*
     public  Position currentabspossensors(double orient){
         //only use when snapped to nearest axis
         double[] w = new double[3];
@@ -986,7 +990,7 @@ public class Rover {
         }
         return new Position(w,orient);
     }
-
+*/
     public Position motortoabs(Rover.Position p){
         double xval = p.returnv()[0]* Math.cos(p.returno()) - p.returnv()[1]*Math.sin(p.returno());
         double yval = p.returnv()[1]*Math.cos(p.returno()) +  p.returnv()[0]* Math.sin(p.returno());
@@ -1113,11 +1117,11 @@ public class Rover {
         int b = 135-degrees;
 
         // final/sin45 = start/sinb   final = start(sin45)/sinb
-        double start = rangeDistancefront();
+        double start = rangeDistanceFLU();
 
         if(d == turnside.ccw) {
-            if(rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+            if(rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
+                while (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
                     motorBR.setPower(0.5);
                     motorFR.setPower(0.5);
                     motorBL.setPower(-0.5);
@@ -1125,8 +1129,8 @@ public class Rover {
 
                 }
             }
-            else if(rangeDistancefront() > start * Math.sin(45) / Math.sin(b)){
-                while (rangeDistancefront() > start * Math.sin(45) / Math.sin(b)) {
+            else if(rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)){
+                while (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
                     motorBR.setPower(0.5);
                     motorFR.setPower(0.5);
                     motorBL.setPower(-0.5);
@@ -1138,8 +1142,8 @@ public class Rover {
 
 
         else if(d == turnside.cw) {
-            if(rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistancefront() < start * Math.sin(45) / Math.sin(b)) {
+            if(rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
+                while (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
                     motorBR.setPower(-0.5);
                     motorFR.setPower(-0.5);
                     motorBL.setPower(0.5);
@@ -1147,8 +1151,8 @@ public class Rover {
 
                 }
             }
-            else if(rangeDistancefront() > start * Math.sin(45) / Math.sin(b)){
-                while (rangeDistancefront() > start * Math.sin(45) / Math.sin(b)) {
+            else if(rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)){
+                while (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
                     motorBR.setPower(-0.5);
                     motorFR.setPower(-0.5);
                     motorBL.setPower(0.5);
@@ -1452,35 +1456,6 @@ public class Rover {
             rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
         }
         */
-    }
-    public void phoneCheck() throws InterruptedException {
-        String value = vuforia.checkVisibility();
-
-        switch (value){
-            case "false":
-                central.telemetry.addLine("No Visible Image");
-                central.telemetry.update();
-                break;
-            default:
-                VectorF translation = vuforia.lastLocation.getTranslation();
-                central.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-
-                // express the rotation of the robot in degrees.
-                Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-                central.telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-
-                processor.vuforiaInput(translation, rotation, value);
-                servo.setPosition(processor.phoneMountAngle());
-                break;
-        }
-        if (targetVisible) {
-
-
-        }
-
-
-
     }
 
 
