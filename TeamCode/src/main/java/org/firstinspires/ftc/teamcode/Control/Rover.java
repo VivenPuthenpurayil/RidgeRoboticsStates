@@ -240,6 +240,9 @@ public class Rover {
     private final int CAMERA_FORWARD_DISPLACEMENT  = 110;   // eg: Camera is 110 mm in front of robot center
     private final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
     private final int CAMERA_LEFT_DISPLACEMENT     = 0;
+    private final int lengthofrobot = 0;
+    private final int betweenultrasonics = 0;
+
     //int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
     //VuforiaLocalizer.Parameters localizerParams = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
@@ -1505,10 +1508,68 @@ public class Rover {
         central.telemetry.update();
     }
 
-    public double calibrateIMU(){
+    public double calibrateIMU(String start) {
 
-return 0;
+        double angleoffwallparallel = Math.toDegrees(Math.atan(((rangeDistanceFRU() - rangeDistanceFLU()) / betweenultrasonics)));
+        if (start == "Red Depot") {
+if(rangeDistanceBRU() > rangeDistanceBRU()) {
 
+
+    return -90 - angleoffwallparallel;
+
+}
+else{
+
+    return 0 - angleoffwallparallel;
+
+}
+
+        }
+        else if (start == "Red Crater")
+        {
+            if(rangeDistanceBRU() > rangeDistanceBLU()) {
+
+
+                return 180 - angleoffwallparallel;
+
+            }
+            else{
+
+                return -90 - angleoffwallparallel;
+
+            }
+        }
+ else if (start == "Blue Depot")
+        {
+            if(rangeDistanceBRU() > rangeDistanceBLU()) {
+
+
+                return 90 - angleoffwallparallel;
+
+            }
+            else{
+
+                return 180 - angleoffwallparallel;
+
+            }
+        }
+ else if (start == "Blue Crater")
+        {
+            if(rangeDistanceBRU() > rangeDistanceBLU()) {
+
+
+                return 0 - angleoffwallparallel;
+
+            }
+            else{
+
+                return 90 - angleoffwallparallel;
+
+            }
+        }
+else{
+            return 0;
+        }
 
     }
 
