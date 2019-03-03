@@ -46,6 +46,13 @@ public class DriveMode extends TeleOpControl {
 
                 rob.driveTrainMovement(0.2,Rover.movements.backward);
             }
+            else if (gamepad1.right_trigger > 0.25){
+                rob.driveTrainMovement(0.2, Rover.movements.cw);
+            }
+            else if (gamepad1.left_trigger > 0.25){
+                rob.driveTrainMovement(0.2, Rover.movements.ccw);
+
+            }
             else if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
 
                 if (yAxis1 >= Math.abs(xAxis1)) {
@@ -92,7 +99,7 @@ public class DriveMode extends TeleOpControl {
             }
 
             if (gamepad2.a){
-                rob.arm.setPower(0.3);
+                rob.arm.setPower(0.1);
             }
             else if (gamepad2.y){
                 rob.arm.setPower(-0.1);
@@ -113,10 +120,10 @@ public class DriveMode extends TeleOpControl {
                 rob.linear.setPower(0);
             }
 
-            if (gamepad2.dpad_up){
+            if (gamepad2.dpad_down){
                 rob.collector.setPower(0.7);
             }
-            else if (gamepad2.dpad_down){
+            else if (gamepad2.dpad_up){
                 rob.collector.setPower(-0.7);
             }
             else {

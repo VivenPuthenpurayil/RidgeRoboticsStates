@@ -16,7 +16,7 @@ public class vufmovingtest extends AutonomousControl {
         setup(runtime, Rover.setupType.vuforia, Rover.setupType.drive, Rover.setupType.phoneswivel);
         while (opModeIsActive()) {
             double[] x = {20,16,10};
-            rob.moveusingvuf(new Rover.Position(x,90));
+           // rob.moveusingvuf(new Rover.Position(x,90));
             sleep(10000);
         }
     }
