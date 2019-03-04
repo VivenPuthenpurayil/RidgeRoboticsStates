@@ -789,20 +789,19 @@ public class Rover {
 
     // movement but now its better???
 
-    public double[] superturn(double angvelo) { //
+    public double[] superturn(double angvelo, movements tdir) { //
         double coeff = angvelo * (1 - StrafetoTotalPower);
-        double[] retval = {coeff, -coeff};
+        double[] retval = {tdir.getDirections()[0]*coeff, tdir.getDirections()[0]*coeff};
         return retval;
     }
 
 
-    public double[] superstrafe(double dir, double velo, double angvelo) {
-        double angle = (360 + getDirection()) % 360;
-        double[] comp1 = anyDirection(velo, dir - angle);
-        double[] comp2 = superturn(angvelo);
+    public double[] superstrafe(double dir, double velo, double angvelo, movements tdir) {
+        double[] comp1 = anyDirection(velo, dir - getDirection());
+        double[] comp2 = superturn(angvelo,tdir);
         double[] retval = new double[2];
         for (int i = 0; i < 4; i++) {
-            //drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
+            drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
             retval[i % 2] = comp1[i % 2] + comp2[i % 2];
         }
         return retval;
