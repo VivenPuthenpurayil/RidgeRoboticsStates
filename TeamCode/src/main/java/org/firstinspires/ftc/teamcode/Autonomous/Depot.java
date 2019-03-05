@@ -13,7 +13,7 @@ public class Depot extends AutonomousControl {
     private ElapsedTime runtime = new ElapsedTime();
     @Override
     public void runOpMode() throws InterruptedException {
-        setup(runtime, Rover.setupType.autonomous);
+       /* setup(runtime, Rover.setupType.autonomous);
 
         while (opModeIsActive()){
             rob.deploy();
@@ -43,7 +43,7 @@ public class Depot extends AutonomousControl {
 
 
 
-        }
+        }*/
     }
 }
 */

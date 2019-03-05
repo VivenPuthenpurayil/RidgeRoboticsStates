@@ -16,6 +16,7 @@ public class AutonomousSmallBot extends AutonomousControl {
 
         setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.vuforia);
 
+
         while (opModeIsActive()) {
             rob.deploy();
             angleOfLander();
