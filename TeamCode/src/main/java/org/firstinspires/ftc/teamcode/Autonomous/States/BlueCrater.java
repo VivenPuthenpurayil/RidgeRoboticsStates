@@ -126,7 +126,7 @@ public class BlueCrater extends AutonomousControl {
                     rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
                     */
                 }
-
+//d
             }
         }
     }
