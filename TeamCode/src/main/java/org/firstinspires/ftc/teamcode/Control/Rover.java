@@ -1102,13 +1102,13 @@ public class Rover {
 
             }
         }
-        if(abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()){
-            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - - ((servo.getPosition()-0.47)*150) - endpos.returno())>5&& central.opModeIsActive()){
+        if(abstomotorCoord(getCurrentPosition()).returno()- ((servo.getPosition()-0.47)*150) > endpos.returno()){
+            while(Math.abs(abstomotorCoord(getCurrentPosition()).returno() - ((servo.getPosition()-0.47)*150) - endpos.returno())>5&& central.opModeIsActive()){
                 driveTrainMovement(0.2,cw);
             }
 
         }
-        else if(abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()){
+        else if(abstomotorCoord(getCurrentPosition()).returno() - ((servo.getPosition()-0.47)*150) < endpos.returno()){
             while(Math.abs((abstomotorCoord(getCurrentPosition()).returno() - ((servo.getPosition()-0.47)*150)) - endpos.returno())>5&& central.opModeIsActive()){
                 driveTrainMovement(0.2,ccw);
             }
@@ -1116,6 +1116,7 @@ public class Rover {
         }
         return getCurrentPosition();
     }
+
     public void ultrasonicturndepot(int degrees, turnside d){
 
         int a = 45;
@@ -1509,7 +1510,7 @@ public class Rover {
     }
 
     public double calibrateIMU(String start) {
-
+//make sure robot is not angled between perpendiculars
         double angleoffwallparallel = Math.toDegrees(Math.atan(((rangeDistanceFRU() - rangeDistanceFLU()) / betweenultrasonics)));
         if (start == "Red Depot") {
 if(rangeDistanceBRU() > rangeDistanceBRU()) {
@@ -1575,5 +1576,37 @@ else{
 
 
 
-
+    public void tipcorrect() throws InterruptedException {
+        double xtilt = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).thirdAngle;
+        double ytilt = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).secondAngle;
+        double angleoff = Math.pow((Math.sin(Math.toRadians((double) xtilt))), 2) + Math.pow(Math.sin(Math.toRadians((double) (ytilt))), 2);
+        if (angleoff > Math.sin(Math.toRadians(10))) {
+            if ((xtilt > 0 && ytilt > 0 && ytilt < xtilt) || (xtilt > 0 && ytilt < 0 && xtilt > -ytilt))//right
+            {
+                driveTrainMovement(0.5,movements.right);
+            } else if ((xtilt > 0 && ytilt > 0 && xtilt < ytilt) || (xtilt < 0 && ytilt > 0 && -xtilt < ytilt))//forwards
+            {
+                driveTrainMovement(0.5,movements.forward);
+            } else if ((xtilt < 0 && ytilt > 0 && -xtilt > ytilt) || (xtilt < 0 && ytilt < 0 && -xtilt > -ytilt))//left
+            {
+                driveTrainMovement(0.5,movements.left);
+            } else if ((xtilt < 0 && ytilt < 0 && -xtilt > -ytilt) || (xtilt > 0 && ytilt < 0 && xtilt < -ytilt))//back
+            {
+                driveTrainMovement(0.5,movements.backward);
+            }
+            try {
+                tipcorrect();
+            } catch (java.lang.InterruptedException e) {
+                try {
+                    stopDrivetrain();
+                } catch (java.lang.InterruptedException i) {
+                }
+            }
+        } else {
+            try {
+                stopDrivetrain();
+            } catch (java.lang.InterruptedException i) {
+            }
+        }
+    }
 }
