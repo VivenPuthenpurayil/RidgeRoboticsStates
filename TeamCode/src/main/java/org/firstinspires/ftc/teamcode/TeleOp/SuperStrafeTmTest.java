@@ -14,8 +14,9 @@ public class SuperStrafeTmTest extends TeleOpControl {
         public void runOpMode() throws InterruptedException{
 
             setup(runtime,Rover.setupType.drive, Rover.setupType.imu);
-            rob.superstrafe(50,0.5,0.5,Rover.movements.cw);
-            wait(5000);
+            while (opModeIsActive()) {
+                rob.superstrafe(50,0.5,0.5,Rover.movements.cw);
+            }
             rob.stopDrivetrain();
         }
 }
