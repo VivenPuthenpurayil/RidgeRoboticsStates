@@ -160,6 +160,9 @@ public class Rover {
 
     public int[] wheelAdjust = {1, 1, 1, 1};
 
+    public static double speedAdjust = 20.0 / 41.0;
+    public static double yToXRatio = 1.25;
+
     public void setWheelAdjust(int fr, int fl, int br, int bl) {
         wheelAdjust[0] = fr;
         wheelAdjust[1] = fl;
@@ -810,10 +813,10 @@ public class Rover {
 
     public static double[] anyDirection(double speed, double angleDegrees) {
         double theta = Math.toRadians(angleDegrees);
-        double beta = Math.atan(1.25);
+        double beta = Math.atan(yToXRatio);
 
-        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
-        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
+        double v1 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
         double[] retval = {v1, v2};
         return retval;
@@ -821,10 +824,10 @@ public class Rover {
 
     public static double[] anyDirectionRadians(double speed, double angleRadians) {
         double theta = angleRadians;
-        double beta = Math.atan(1.25);
+        double beta = Math.atan(yToXRatio);
 
-        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
-        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
+        double v1 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
         double[] retval = {v1, v2};
         return retval;
