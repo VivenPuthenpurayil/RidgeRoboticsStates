@@ -149,14 +149,26 @@ public class BlueDepotSensor extends AutonomousControl {
                     rob.encoderMovement(0.6, 3,3, 300, Rover.movements.linearIn, rob.linear);
                     rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armDown, rob.arm);
 
+                    //Method that turns to a general alignment
+
+                    rob.ultrasonicParallelToWall(0.34, 10);
+                    rob.ultrasonicMoveRightParallelToWall(0.5, 10, 36, Rover.movements.left);
+
+                    rob.turn(90, Rover.turnside.ccw, .3, Rover.axis.center);
+
+                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armUp, rob.arm);
+                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.linearOut, rob.linear);
+
 
 
 
                 }
 
+                }
+
             }
         }
-    }
+
     public int checkMinerals(int gold, int sil1, int sil2){
         if (gold == -1 && sil1 != -1 && sil2 != -1){
             return 0;

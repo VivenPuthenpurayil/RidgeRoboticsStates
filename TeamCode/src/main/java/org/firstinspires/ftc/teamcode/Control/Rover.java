@@ -49,6 +49,7 @@ import static org.firstinspires.ftc.teamcode.Control.Rover.movements.ccw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.cw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.left;
+import static org.firstinspires.ftc.teamcode.Control.Rover.movements.right;
 
 public class Rover {
 
@@ -59,7 +60,7 @@ public class Rover {
 
         StringBuilder i = new StringBuilder();
         for (setupType type : setup) {
-            switch (type){
+            switch (type) {
                 case drive:
                     setupDrivetrain();
                     break;
@@ -159,7 +160,7 @@ public class Rover {
 
     public int[] wheelAdjust = {1, 1, 1, 1};
 
-    public void setWheelAdjust(int fr, int fl, int br, int bl){
+    public void setWheelAdjust(int fr, int fl, int br, int bl) {
         wheelAdjust[0] = fr;
         wheelAdjust[1] = fl;
         wheelAdjust[2] = br;
@@ -182,25 +183,29 @@ public class Rover {
     private double maxPotentiometerVal = 5;
     private double minPotentiometerVal = 0;
     //----  MAPPING         ----
-    ModernRoboticsI2cRangeSensor rangeSensorfront;
-    ModernRoboticsI2cRangeSensor rangeSensorback;
-    ModernRoboticsI2cRangeSensor rangeSensorright;
-    ModernRoboticsI2cRangeSensor rangeSensorleft;
+    ModernRoboticsI2cRangeSensor FRU;
+    ModernRoboticsI2cRangeSensor FLU;
+    ModernRoboticsI2cRangeSensor BCU;
+    ModernRoboticsI2cRangeSensor BRU;
+    ModernRoboticsI2cRangeSensor BLU;
 
 
     //----  DRIVE           ----
-    public  DcMotor[] drivetrain;   //set in motorDriveMode() for drivetrain movement functions
+    public DcMotor[] drivetrain;   //set in motorDriveMode() for drivetrain movement functions
 
     public DcMotor motorFR;
     public DcMotor motorFL;
     public DcMotor motorBR;
     public DcMotor motorBL;
+    public DcMotor leftshooter;
+    public DcMotor rightshooter;
+    public DcMotor collector1;
 
 
 
     public double StrafetoTotalPower = 2.0/3.0;
     public double mecanumAngle = 36; //from forwards, in degrees
-    public double communism = StrafetoTotalPower*Math.cos(Math.toRadians(mecanumAngle*2));
+    public double communism = StrafetoTotalPower * Math.cos(Math.toRadians(mecanumAngle * 2));
 
     //----  MINERAL CONTROL ----
 
@@ -236,9 +241,8 @@ public class Rover {
 
 
     //-----         LATCHING FUNCTIONS          --------------
-    public void latchInit() throws InterruptedException{
-        while(!latchingLimit.getState())
-        {
+    public void latchInit() throws InterruptedException {
+        while (!latchingLimit.getState()) {
             anyMovement(0.8, Rover.movements.rackCompress, rack);
         }
         rack.setPower(0);
@@ -246,19 +250,18 @@ public class Rover {
         central.telemetry.update();
     }
 
-    public void latch() throws InterruptedException{
-        while(!latchingLimit.getState() && central.opModeIsActive())
-        {
+    public void latch() throws InterruptedException {
+        while (!latchingLimit.getState() && central.opModeIsActive()) {
             anyMovement(0.8, Rover.movements.rackCompress, rack);
         }
         rack.setPower(0);
         central.telemetry.addLine("Latched");
         central.telemetry.update();
     }
-    public void deploy() throws InterruptedException{
 
-        while(!deployingLimit.getState() && central.opModeIsActive())
-        {
+    public void deploy() throws InterruptedException {
+
+        while (!deployingLimit.getState() && central.opModeIsActive()) {
             anyMovement(0.8, movements.rackExtend, rack);
         }
         rack.setPower(0);
@@ -274,17 +277,24 @@ public class Rover {
 
     //------        MAPPING FUNCTIONS           --------------
 
-    public double rangeDistancefront(){
-        return rangeSensorfront.getDistance(DistanceUnit.INCH);
+    public double rangeDistanceFRU() {
+        return FRU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceback(){
-        return rangeSensorback.getDistance(DistanceUnit.INCH);
+
+    public double rangeDistanceFLU() {
+        return FLU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceright(){
-        return rangeSensorright.getDistance(DistanceUnit.INCH);
+
+    public double rangeDistanceBRU() {
+        return BRU.getDistance(DistanceUnit.INCH);
     }
-    public double rangeDistanceleft(){
-        return rangeSensorleft.getDistance(DistanceUnit.INCH);
+
+    public double rangeDistanceBLU() {
+        return BLU.getDistance(DistanceUnit.INCH);
+    }
+
+    public double rangeDistanceBCU() {
+        return BCU.getDistance(DistanceUnit.INCH);
     }
 
 
@@ -297,11 +307,12 @@ public class Rover {
 
     public void setupSensors() {
 
-        rangeSensorfront = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
-        rangeSensorback = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
 
-        rangeSensorright = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
-        rangeSensorleft = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
+        FRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
+        FLU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
+
+        BCU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
+        BRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
     }
 
     public void setupVuforia(VuforiaHandler.type s) {
@@ -336,13 +347,9 @@ public class Rover {
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
-
-
-
-
-
         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
+
     public void setupLatching() throws InterruptedException {
         rack = motor(rackS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -357,7 +364,7 @@ public class Rover {
     public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
 
-        linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
+        linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         collector = motor(collectorS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
 
@@ -592,13 +599,13 @@ public class Rover {
 
         double start = getDirection();
 
-        double end = (start + ((direction != turnside.cw) ? target : -target) + 360)%360;
+        double end = (start + ((direction == turnside.cw) ? target : -target) + 360) % 360;
 
         isnotstopped = true;
         try {
             switch (rotation_Axis) {
                 case center:
-                    driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
+                    driveTrainMovement(speed, (direction != turnside.cw) ? cw : ccw);
                     break;
                 case back:
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
@@ -702,18 +709,18 @@ public class Rover {
     public void armMoveUp(){
         // arm.setPower(1-Math.abs((armPotentiometer.getVoltage()-minPotentiometerVal)/(maxPotentiometerVal-minPotentiometerVal)-1));
     }
-    public void armMoveDown(){
+
+    public void armMoveDown() {
         //arm.setPower(Math.abs((armPotentiometer.getVoltage()-minPotentiometerVal)/(maxPotentiometerVal-minPotentiometerVal)-1)-1);
     }
     //ENUMERATIONS
 
-    public enum EncoderMode{
+    public enum EncoderMode {
         ON, OFF
     }
     public enum setupType{
         autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia, fullvision, tensorflow,  positioning;
     }
-
 
 
     //-------------------SET FUNCTIONS--------------------------------
@@ -730,7 +737,6 @@ public class Rover {
     }
 
 
-
     public void setRack(DcMotor rack) {
         this.rack = rack;
     }
@@ -741,7 +747,7 @@ public class Rover {
     //-------------------CHOICE ENUMS-------------------------
 
 
-    public enum movements{
+    public enum movements {
         backward(-1, 1, -1, 1),
         forward(1, -1, 1, -1),
         left(1, 1, -1, -1),
@@ -752,15 +758,15 @@ public class Rover {
         br(-1, 0, 0, 1),
         ccw(1, 1, 1, 1),
         cw(-1, -1, -1, -1),
-        cwback(-1,-1,0,0),
-        ccwback(1,1,0,0),
-        cwfront(0,0,-1,-1),
-        ccwfront(0,0,1,1),
+        cwback(-1, -1, 0, 0),
+        ccwback(1, 1, 0, 0),
+        cwfront(0, 0, -1, -1),
+        ccwfront(0, 0, 1, 1),
         rackExtend(-1),
         rackCompress(1),
         forward2(1, -1),
         back2(-1, 1),
-        cw2(1,1),
+        cw2(1, 1),
         ccw2(-1, -1),
         linearOut(-1),
         linearIn(1),
@@ -772,71 +778,72 @@ public class Rover {
 
         private final double[] directions;
 
-        movements(double... signs){
+        movements(double... signs) {
             this.directions = signs;
         }
 
-        public double[] getDirections(){
+        public double[] getDirections() {
             return directions;
         }
     }
 
     // movement but now its better???
 
-    public double[] superturn(double angvelo) { //
+    public double[] superturn(double angvelo, movements tdir) { //
         double coeff = angvelo * (1 - StrafetoTotalPower);
-        double[] retval = {coeff, -coeff};
+        double[] retval = {tdir.getDirections()[0]*coeff, tdir.getDirections()[0]*coeff};
         return retval;
     }
 
 
-    public double[] superstrafe(double dir, double velo, double angvelo){
-        double angle = (360+getDirection())%360;
-        double[] comp1=anyDirection(velo,dir-angle);
-        double[] comp2=superturn(angvelo);
+    public double[] superstrafe(double dir, double velo, double angvelo, movements tdir) {
+        double[] comp1 = anyDirection(velo, dir - getDirection());
+        double[] comp2 = superturn(angvelo,tdir);
         double[] retval = new double[2];
-        for(int i=0;i<4;i++) {
-            //drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
-            retval[i%2] = comp1[i%2]+comp2[i%2];
+        for (int i = 0; i < 4; i++) {
+            drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
+            retval[i % 2] = comp1[i % 2] + comp2[i % 2];
         }
         return retval;
     }
 
 
-    public static double[] anyDirection(double speed, double angleDegrees){
+    public static double[] anyDirection(double speed, double angleDegrees) {
         double theta = Math.toRadians(angleDegrees);
         double beta = Math.atan(1.25);
 
-        double v1 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
-        double v2 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
-        double[] retval = {v1,v2};
+        double[] retval = {v1, v2};
         return retval;
     }
-    public static double[] anyDirectionRadians(double speed, double angleRadians){
+
+    public static double[] anyDirectionRadians(double speed, double angleRadians) {
         double theta = angleRadians;
         double beta = Math.atan(1.25);
 
-        double v1 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) + speed * Math.cos(theta)/Math.cos(beta));
-        double v2 = 21.0/58.0 * (speed * Math.sin(theta)/Math.sin(beta) - speed * Math.cos(theta)/Math.cos(beta));
+        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
-        double[] retval = {v1,v2};
+        double[] retval = {v1, v2};
         return retval;
     }
-    public void driveTrainMovementAngle(double speed, double angle){
+
+    public void driveTrainMovementAngle(double speed, double angle) {
 
         double[] speeds = anyDirection(speed, angle);
         for (int i = 0; i < drivetrain.length; i++) {
-            if (i == 0 || i== 4){
+            if (i == 0 || i == 4) {
                 drivetrain[i].setPower(speeds[1]);
-            }
-            else {
+            } else {
                 drivetrain[i].setPower(speeds[0]);
             }
         }
 
     }
-    public void driveTrainMovementAngleRadians(double speed, double angle){
+
+    public void driveTrainMovementAngleRadians(double speed, double angle) {
 
         double[] speeds = anyDirectionRadians(speed, angle);
         motorFR.setPower(movements.forward.directions[0] * speeds[0]);
@@ -908,6 +915,42 @@ public class Rover {
         }
     }
 
+    public void ultrasonicParallelToWall(double speed ,double tolerance) throws InterruptedException {
+        double FRUDistance = FRU.getDistance(DistanceUnit.INCH);
+        double FLUDistance = FLU.getDistance(DistanceUnit.INCH);
+
+        if(FRUDistance > FLUDistance) {
+            while(FLUDistance+tolerance>FRUDistance){
+                driveTrainMovement(speed, ccw);
+                FRUDistance = FRU.getDistance(DistanceUnit.INCH);
+                FLUDistance = FLU.getDistance(DistanceUnit.INCH);
+            }
+        }else if(FLUDistance > FRUDistance){
+            while(FRUDistance+tolerance>FLUDistance){
+                driveTrainMovement(speed, cw);
+                FRUDistance = FRU.getDistance(DistanceUnit.INCH);
+                FLUDistance = FLU.getDistance(DistanceUnit.INCH);
+            }
+        }else {
+            central.telemetry.addLine("No bueno");
+        }
+    }
+
+    public void ultrasonicMoveRightParallelToWall(double speed, double tolerance, double stopDistanceAway, movements movements) throws InterruptedException {
+        double FRUDistance = FRU.getDistance(DistanceUnit.INCH);
+        double FLUDistance = FLU.getDistance(DistanceUnit.INCH);
+        double BRUDistance = BRU.getDistance(DistanceUnit.INCH);
+
+        if(BRUDistance<stopDistanceAway){
+            while((FRUDistance-FLUDistance)<tolerance && BRUDistance<stopDistanceAway) {
+                FRUDistance = FRU.getDistance(DistanceUnit.INCH);
+                FLUDistance = FLU.getDistance(DistanceUnit.INCH);
+                BRUDistance = BRU.getDistance(DistanceUnit.INCH);
+
+                driveTrainMovement(speed, movements);
+            }
+        }
+    }
 
 
     //-------------------------------------Sensors-------------------------------------------
