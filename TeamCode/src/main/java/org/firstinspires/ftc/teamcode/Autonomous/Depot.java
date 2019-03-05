@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
-
+/*
 @Autonomous(name="Depot", group ="Smart")
 
 public class Depot extends AutonomousControl {
@@ -46,3 +46,4 @@ public class Depot extends AutonomousControl {
         }
     }
 }
+*/

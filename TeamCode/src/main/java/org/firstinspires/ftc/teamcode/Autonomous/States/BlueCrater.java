@@ -53,8 +53,9 @@ public class BlueCrater extends AutonomousControl {
         while (opModeIsActive()) {
             telemetry.addLine("Deploy time");
             telemetry.update();
+
             rob.deploy();
-            rob.turn(90, Rover.turnside.cw, 0.3, Rover.axis.center);
+            rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
 
             initVuforia();
 
@@ -67,108 +68,69 @@ public class BlueCrater extends AutonomousControl {
 
             if (opModeIsActive()) {
                 /** Activate Tensor Flow Object Detection. */
-                if (rob.vuforia.tfod != null) {
+                if (tfod != null) {
                     tfod.activate();
                 }
 
                 while (opModeIsActive()) {
+                    int positionCounter = 0;
                     if (tfod != null) {
                         // getUpdatedRecognitions() will return null if no new information is available since
                         // the last time that call was made.
                         List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                         if (updatedRecognitions != null) {
                             telemetry.addData("# Object Detected", updatedRecognitions.size());
-                            if (updatedRecognitions.size() == 2) {
-                                int goldMineralX = -1;
-                                int silverMineral1X = -1;
-                                int silverMineral2X = -1;
-                                for (Recognition recognition : updatedRecognitions) {
-                                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                        goldMineralX = (int) recognition.getLeft();
-                                    } else if (silverMineral1X == -1) {
-                                        silverMineral1X = (int) recognition.getLeft();
-                                    } else {
-                                        silverMineral2X = (int) recognition.getLeft();
-                                    }
+                            for (Recognition recognition : updatedRecognitions) {
+                                while (!recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                    rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
+                                    positionCounter++;
                                 }
-
-                                int x = rob.checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
-                                telemetry.addData("Value: ", x);
-                                switch (x) {
-                                    case 0:
-                                        telemetry.addData("Gold Mineral Position", "Right");
-                                        o = pos.right;
-                                        break;
-                                    case 1:
-                                        if (goldMineralX < silverMineral2X) {
-                                            telemetry.addData("Gold Mineral Position", "Left");
-                                            o = pos.left;
-                                        } else {
-                                            telemetry.addData("Gold Mineral Position", "Center");
-                                            o = pos.center;
-                                        }
-                                        break;
-                                    case 2:
-                                        if (goldMineralX < silverMineral1X) {
-                                            telemetry.addData("Gold Mineral Position", "Left");
-                                            o = pos.left;
-                                        } else {
-                                            telemetry.addData("Gold Mineral Position", "Center");
-                                            o = pos.center;
-                                        }
-                                        break;
-                                    default:
-                                        telemetry.addLine("no clue b");
-                                        o = pos.unknown;
-                                        break;
+                                if (positionCounter == 0) {
+                                    o = pos.right;
+                                } else if (positionCounter == 1) {
+                                    o = pos.center;
+                                } else {
+                                    o = pos.left;
                                 }
-
                             }
-                            telemetry.update();
-                        }
-                    }
 
-                    rob.driveTrainEncoderMovement(0.5, 5, 1, 300, Rover.movements.left);
+                        }
+                        telemetry.update();
+                    }
 
                     switch (o) {
+                        case center:
+                            rob.driveTrainEncoderMovement(0.8, 1.5, 5, 50, Rover.movements.forward);
                         case left:
-                            rob.driveTrainEncoderMovement(0.5, 3, 1.5, 50, Rover.movements.left);
-                            rob.driveTrainEncoderMovement(0.5, 3, 2, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
                             break;
-
                         case right:
-                            rob.driveTrainEncoderMovement(0.5, 3, 1.5, 50, Rover.movements.right);
-                            rob.driveTrainEncoderMovement(0.5, 3, 2, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
                             break;
                         default:
-                            rob.driveTrainEncoderMovement(0.5, 3, 2, 50, Rover.movements.forward);
-                            rob.driveTrainEncoderMovement(0.5, 3, 2, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
                             break;
-
                     }
 
-                    rob.turn(90, Rover.turnside.ccw, .3, Rover.axis.center);
-                    rob.driveTrainEncoderMovement(0.8, 5,5, 50, Rover.movements.forward);
-                    rob.turn(45, Rover.turnside.ccw, .3, Rover.axis.center);
-                    rob.driveTrainEncoderMovement(0.8, 7,5, 50, Rover.movements.forward);
-
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armUp, rob.arm);
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.linearOut, rob.linear);
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.collectorEject, rob.collector);
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.linearIn, rob.linear);
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armDown, rob.arm);
+                    /*
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.collectorEject, rob.collector);
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearIn, rob.linear);
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armDown, rob.arm);
 
                     rob.turn(180, Rover.turnside.ccw, .3, Rover.axis.center);
-                    rob.driveTrainEncoderMovement(0.8, 7,5, 50, Rover.movements.forward);
+                    rob.driveTrainEncoderMovement(0.8, 7, 5, 50, Rover.movements.forward);
 
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.armUp, rob.arm);
-                    rob.encoderMovement(0.6, 3,3, 300, Rover.movements.linearOut, rob.linear);
-
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
+                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
+                    */
                 }
 
             }
         }
     }
+
     public int checkMinerals(int gold, int sil1, int sil2){
         if (gold == -1 && sil1 != -1 && sil2 != -1){
             return 0;
