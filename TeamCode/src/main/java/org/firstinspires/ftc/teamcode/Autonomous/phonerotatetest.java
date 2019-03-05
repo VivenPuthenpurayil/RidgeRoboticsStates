@@ -16,7 +16,7 @@ public class phonerotatetest extends AutonomousControl {
         setup(runtime, Rover.setupType.vuforia, Rover.setupType.phoneswivel);
         while (opModeIsActive()) {
 
-            rob.turntest(rob.vuforia.checkVisibility());
+           // rob.turntest(rob.vuforia.checkVisibility());
             sleep(50);
         }
     }

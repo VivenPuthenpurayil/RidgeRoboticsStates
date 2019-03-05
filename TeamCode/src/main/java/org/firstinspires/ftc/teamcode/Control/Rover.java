@@ -82,11 +82,19 @@ public class Rover {
                     break;
 
                 case vuforia:
-                    setupVuforia(0);
+                    setupVuforia(VuforiaHandler.type.images);
                     break;
 
                 case tensorflow:
-                    setupVuforia(1);
+                    setupVuforia(VuforiaHandler.type.minerals);
+                    break;
+
+                case fullvision:
+                    setupVuforia(VuforiaHandler.type.both);
+                    break;
+
+                case positioning:
+                    setupPositionProcessing(vuforiaMode);
                     break;
                 case sensors:
                     setupSensors();
@@ -98,7 +106,7 @@ public class Rover {
                     setupIMU();
                     setupDrivetrain();
                     setupMineralControl();
-                    setupVuforia(1);
+                    setupVuforia(VuforiaHandler.type.both);
                     setupPhone();
                     //setupSensors();
                     break;
@@ -152,6 +160,9 @@ public class Rover {
 
     public int[] wheelAdjust = {1, 1, 1, 1};
 
+    public static double speedAdjust = 20.0 / 41.0;
+    public static double yToXRatio = 1.25;
+
     public void setWheelAdjust(int fr, int fl, int br, int bl) {
         wheelAdjust[0] = fr;
         wheelAdjust[1] = fl;
@@ -162,10 +173,12 @@ public class Rover {
     //none rn
 
 
+
     //----------------CONFIGURATION FIELDS--------------------
 
 
     SamplingOrder sampleStatus = SamplingOrder.UNCHECKED;
+
 
 
     //---- ARM ----------
@@ -192,7 +205,8 @@ public class Rover {
     public DcMotor collector1;
 
 
-    public double StrafetoTotalPower = 2 / 3;
+
+    public double StrafetoTotalPower = 2.0/3.0;
     public double mecanumAngle = 36; //from forwards, in degrees
     public double communism = StrafetoTotalPower * Math.cos(Math.toRadians(mecanumAngle * 2));
 
@@ -225,20 +239,8 @@ public class Rover {
     public float initorient;
 
     //---- VUFORIA POSITIONING
-    private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
-    VuforiaLocalizer vuf;
-    private OpenGLMatrix lastLocation = null;
-    private static final String VUFORIA_KEY = " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
-    private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
-    private VectorF translation;//after you call updatetransorient these will update with the position/rotation if it sees a marker, otherwise it just doesnt change it
-    private Orientation rotation;//<-'
-
-    private final int CAMERA_FORWARD_DISPLACEMENT = 110;   // eg: Camera is 110 mm in front of robot center
-    private final int CAMERA_VERTICAL_DISPLACEMENT = 200;   // eg: Camera is 200 mm above ground
-    private final int CAMERA_LEFT_DISPLACEMENT = 0;
-    //int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-    //VuforiaLocalizer.Parameters localizerParams = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+    PositionProcessor processor;
 
 
     //-----         LATCHING FUNCTIONS          --------------
@@ -268,10 +270,9 @@ public class Rover {
         rack.setPower(0);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         //while(Math.absimu.getAcceleration())
-        driveTrainEncoderMovement(0.3, 0.5, 5, 0, forward);
-        driveTrainEncoderMovement(0.5, 1, 5, 0, left);
-        driveTrainEncoderMovement(0.3, 0.75, 5, 0, backward);
-
+        driveTrainTimeMovement(0.3, forward, 700, 50);
+        driveTrainTimeMovement(0.5, left, 300, 50);
+        driveTrainTimeMovement(0.3, backward, 700, 50);
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
@@ -317,14 +318,28 @@ public class Rover {
         BRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
     }
 
-    public void setupVuforia(int i) {
-        if (i == 1) {
-            vuforia = new VuforiaHandler(central, VuforiaHandler.type.both);
+    public void setupVuforia(VuforiaHandler.type s) {
+        if (s == VuforiaHandler.type.both) {
+            vuforia = new VuforiaHandler(central, s);
             vuforiaMode = true;
             tensorflowMode = true;
-        } else if (i == 0) {
-            vuforia = new VuforiaHandler(central, VuforiaHandler.type.images);
+        }
+        else if (s == VuforiaHandler.type.images){
+            vuforia = new VuforiaHandler(central, s);
             vuforiaMode = true;
+        }
+        else {
+            vuforia = new VuforiaHandler(central, s);
+            tensorflowMode = true;
+        }
+
+    }
+    public void setupPositionProcessing(boolean vuforiaMode){
+        if (vuforiaMode) {
+            processor = new PositionProcessor(vuforia);
+        }
+        else {
+            processor = new PositionProcessor();
         }
 
     }
@@ -334,10 +349,6 @@ public class Rover {
         motorFL = motor(motorFLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        leftshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        rightshooter = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-        collector1 = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
-
 
         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
@@ -353,7 +364,7 @@ public class Rover {
         latchInit();
     }
 
-    public void setupMineralControl() throws InterruptedException {
+    public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
 
         linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
@@ -364,12 +375,12 @@ public class Rover {
 
     }
 
-    public void setupMarker() throws InterruptedException {
+    public void setupMarker() throws InterruptedException{
 
     }
 
 
-    public void setupIMU() throws InterruptedException {
+    public void setupIMU() throws InterruptedException{
         parameters.angleUnit = BNO055IMUImpl.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMUImpl.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample opmode
@@ -392,7 +403,6 @@ public class Rover {
         motor.setPower(0);
         return motor;
     }
-
     public Servo servo(String name, Servo.Direction direction, double min, double max, double start) throws InterruptedException {
         Servo servo = hardwareMap.servo.get(name);
         servo.setDirection(direction);
@@ -400,7 +410,6 @@ public class Rover {
         servo.setPosition(start);
         return servo;
     }
-
     public CRServo servo(String name, DcMotorSimple.Direction direction, double startSpeed) throws InterruptedException {
         CRServo servo = hardwareMap.crservo.get(name);
         servo.setDirection(direction);
@@ -408,7 +417,6 @@ public class Rover {
         servo.setPower(0);
         return servo;
     }
-
     public ColorSensor colorSensor(String name, boolean ledOn) throws InterruptedException {
         ColorSensor sensor = hardwareMap.colorSensor.get(name);
         sensor.enableLed(ledOn);
@@ -418,12 +426,10 @@ public class Rover {
 
         return sensor;
     }
-
     public ModernRoboticsI2cRangeSensor ultrasonicSensor(String name) throws InterruptedException {
 
         return hardwareMap.get(ModernRoboticsI2cRangeSensor.class, name);
     }
-
     public void encoder(EncoderMode mode, DcMotor... motor) throws InterruptedException {
         switch (mode) {
             case ON:
@@ -462,7 +468,7 @@ public class Rover {
 
     //------------------------ENCODER MOVEMENTS----------------------------
 
-    public void driveTrainEncoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement) throws InterruptedException {
+    public void driveTrainEncoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement) throws  InterruptedException{
 
         int[] targets = new int[drivetrain.length];
         double[] signs = movement.getDirections();
@@ -472,20 +478,20 @@ public class Rover {
             // Determine new target position, and pass to motor controller
 
 
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor : drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
                 targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_REV);
             }
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor: drivetrain){
                 int x = Arrays.asList(drivetrain).indexOf(motor);
                 motor.setTargetPosition(targets[x]);
             }
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor: drivetrain){
                 motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             runtime.reset();
 
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor:drivetrain){
                 motor.setPower(Math.abs(speed));
             }
 
@@ -498,20 +504,20 @@ public class Rover {
                 // Display it for the driver.
                 // Allow time for other processes to run.
                 central.idle();
-                for (DcMotor motor : drivetrain) {
-                    if (!motor.isBusy()) {
-                        x = false;
+                for (DcMotor motor: drivetrain){
+                    if (!motor.isBusy()){
+                        x =false;
                     }
                 }
             }
 
             // Stop all motion;
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor: drivetrain){
                 motor.setPower(0);
             }
 
             // Turn off RUN_TO_POSITION
-            for (DcMotor motor : drivetrain) {
+            for (DcMotor motor: drivetrain){
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             central.sleep(waitAfter);
@@ -519,8 +525,7 @@ public class Rover {
 
         }
     }
-
-    public void encoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, DcMotor... motors) throws InterruptedException {
+    public void encoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, DcMotor... motors) throws  InterruptedException{
 
         int[] targets = new int[motors.length];
         double[] signs = movement.getDirections();
@@ -529,20 +534,20 @@ public class Rover {
         if (central.opModeIsActive()) {
             // Determine new target position, and pass to motor controller
 
-            for (DcMotor motor : motors) {
+            for (DcMotor motor : motors){
                 int x = Arrays.asList(motors).indexOf(motor);
                 targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * 4.0 * 3.14165 * COUNTS_PER_INCH);
             }
-            for (DcMotor motor : motors) {
+            for (DcMotor motor: motors){
                 int x = Arrays.asList(motors).indexOf(motor);
                 motor.setTargetPosition(targets[x]);
             }
-            for (DcMotor motor : motors) {
+            for (DcMotor motor: motors){
                 motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             runtime.reset();
 
-            for (DcMotor motor : motors) {
+            for (DcMotor motor:motors){
                 motor.setPower(Math.abs(speed));
             }
 
@@ -555,20 +560,20 @@ public class Rover {
                 // Display it for the driver.
                 // Allow time for other processes to run.
                 central.idle();
-                for (DcMotor motor : motors) {
-                    if (!motor.isBusy()) {
-                        x = false;
+                for (DcMotor motor: motors){
+                    if (!motor.isBusy()){
+                        x =false;
                     }
                 }
             }
 
             // Stop all motion;
-            for (DcMotor motor : motors) {
+            for (DcMotor motor: motors){
                 motor.setPower(0);
             }
 
             // Turn off RUN_TO_POSITION
-            for (DcMotor motor : motors) {
+            for (DcMotor motor: motors){
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
             central.sleep(waitAfter);
@@ -576,21 +581,21 @@ public class Rover {
 
         }
     }
-
-    public int checkMinerals(int gold, int sil1, int sil2) {
-        if (gold == -1 && sil1 != -1 && sil2 != -1) {
+    public int checkMinerals(int gold, int sil1, int sil2){
+        if (gold == -1 && sil1 != -1 && sil2 != -1){
             return 0;
-        } else if (gold != -1 && sil1 == -1 && sil2 != -1) {
+        }
+        else if (gold != -1 && sil1 == -1 && sil2 != -1){
             return 1;
-        } else if (gold != -1 && sil1 != -1 && sil2 == -1) {
+        }
+        else if (gold != -1 && sil1 != -1 && sil2 == -1){
             return 2;
-        } else {
+        }else{
             return -1;
         }
 
     }
-
-    public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException {
+    public void turn(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
 
         central.telemetry.addData("IMU State: ", imu.getSystemStatus());
         central.telemetry.update();
@@ -616,8 +621,8 @@ public class Rover {
             isnotstopped = false;
         }
 
-        while (!((end <= getDirection() + 1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {
-            if (end + 1 < getDirection()) {
+        while (!((end <= getDirection()+1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {
+            if (end + 1 < getDirection()){
                 driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
             }
             central.telemetry.addData("IMU Inital: ", start);
@@ -638,27 +643,25 @@ public class Rover {
 
 
     //------------------DRIVETRAIN TELEOP FUNCTIONS------------------------------------------------------------------------
-    public void driveTrainMovement(double speed, movements movement) throws InterruptedException {
+    public void driveTrainMovement(double speed, movements movement) throws InterruptedException{
         double[] signs = movement.getDirections();
-        for (DcMotor motor : drivetrain) {
+        for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x] * wheelAdjust[x] * speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
-
-    public void driveTrainMovement(double... speed) throws InterruptedException {
+    public void driveTrainMovement(double... speed) throws InterruptedException{
 
         for (int i = 0; i < drivetrain.length; i++) {
             drivetrain[i].setPower(speed[i]);
         }
     }
-
-    public void driveTrainTimeMovement(double speed, movements movement, long duration, long waitAfter) throws InterruptedException {
+    public void driveTrainTimeMovement(double speed, movements movement, long duration, long waitAfter) throws InterruptedException{
         double[] signs = movement.getDirections();
-        for (DcMotor motor : drivetrain) {
+        for (DcMotor motor: drivetrain){
             int x = Arrays.asList(drivetrain).indexOf(motor);
-            motor.setPower(signs[x] * wheelAdjust[x] * speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
         central.sleep(duration);
@@ -666,17 +669,16 @@ public class Rover {
         central.sleep(waitAfter);
     }
 
-    public void anyMovement(double speed, movements movement, DcMotor... motors) throws InterruptedException {
+    public void anyMovement(double speed, movements movement, DcMotor... motors) throws InterruptedException{
         double[] signs = movement.getDirections();
-        for (DcMotor motor : motors) {
+        for (DcMotor motor: motors){
             int x = Arrays.asList(motors).indexOf(motor);
-            motor.setPower(signs[x] * wheelAdjust[x] * speed);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
 
         }
     }
-
-    public void stopDrivetrain() throws InterruptedException {
-        for (DcMotor motor : drivetrain) {
+    public void stopDrivetrain() throws InterruptedException{
+        for (DcMotor motor: drivetrain){
             motor.setPower(0);
         }
     }
@@ -691,22 +693,23 @@ public class Rover {
             motor.setPower(0);
         }
     }
+    public void shoot(){
 
-    public void shoot() {
+
 
 
     }
-
     public void sample() {
-        if (sampleStatus == SamplingOrder.UNCHECKED) {
+        if (sampleStatus==SamplingOrder.UNCHECKED) {
             //Sample
-        } else if (sampleStatus == SamplingOrder.UNKNOWN) {
+        }
+        else if (sampleStatus==SamplingOrder.UNKNOWN){
             //Multiple Attempt Sampling
         }
 
     }
 
-    public void armMoveUp() {
+    public void armMoveUp(){
         // arm.setPower(1-Math.abs((armPotentiometer.getVoltage()-minPotentiometerVal)/(maxPotentiometerVal-minPotentiometerVal)-1));
     }
 
@@ -718,9 +721,8 @@ public class Rover {
     public enum EncoderMode {
         ON, OFF
     }
-
-    public enum setupType {
-        autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia, tensorflow;
+    public enum setupType{
+        autonomous, drive, latching, latchingTele, imu, marker, phoneswivel, sensors, mineralControl, teleop, none, vuforia, fullvision, tensorflow,  positioning;
     }
 
 
@@ -776,6 +778,7 @@ public class Rover {
         collectorEject(1);
 
 
+
         private final double[] directions;
 
         movements(double... signs) {
@@ -810,10 +813,10 @@ public class Rover {
 
     public static double[] anyDirection(double speed, double angleDegrees) {
         double theta = Math.toRadians(angleDegrees);
-        double beta = Math.atan(7.0 / 3.0);
+        double beta = Math.atan(yToXRatio);
 
-        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
-        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
+        double v1 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
         double[] retval = {v1, v2};
         return retval;
@@ -821,10 +824,10 @@ public class Rover {
 
     public static double[] anyDirectionRadians(double speed, double angleRadians) {
         double theta = angleRadians;
-        double beta = Math.atan(7.0 / 3.0);
+        double beta = Math.atan(yToXRatio);
 
-        double v1 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
-        double v2 = 21.0 / 58.0 * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
+        double v1 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) + speed * Math.cos(theta) / Math.cos(beta));
+        double v2 = speedAdjust * (speed * Math.sin(theta) / Math.sin(beta) - speed * Math.cos(theta) / Math.cos(beta));
 
         double[] retval = {v1, v2};
         return retval;
@@ -864,590 +867,55 @@ public class Rover {
 
 
     //-----------------------------------Image Processing---------------------------------------
-    public enum SamplingOrder {
+    public enum SamplingOrder{
         LEFT, CENTER, RIGHT, UNKNOWN, UNCHECKED;
     }
 
 
+
+
     //-----------------------------------Mapping------------------------------------------------
-    public static class Position {
-        double[] vector = {0, 0, 0};
-        double orient;
 
-        public Position(double[] vector, double orient) {
-            this.vector = vector;
-            this.orient = orient;
+    public PositionProcessor.Point getCurrentPosition() throws InterruptedException{
+        String r = vuforia.checkVisibility();
+        if(r.equals("false")){
+            return new PositionProcessor.Point(new VectorF(-1000,-1000,-1000), new Orientation(), "false");
         }
-
-        double[] returnv() {
-            return vector;
-
-        }
-
-        double returno() {
-
-            return orient;
-        }
-
-        void updateOrient(double o) {
-            orient = o;
-
-        }
-
-
-    }
-
-    public Position getCurrentPosition() throws InterruptedException {
-        double orient = 0;
-        while (vuforia.checkVisibility().equals("false") && central.opModeIsActive()) {
-        }
-        //  if(vuforia.checkVisibility().equals("true") && central.opModeIsActive()) {
 
         VectorF translation = vuforia.lastLocation.getTranslation();
 
         Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
-        orient = rotation.thirdAngle;
-        return vuftopos((double) (translation.get(0) / mmPerInch), (double) (translation.get(1) / mmPerInch), (double) (translation.get(2) / mmPerInch), rotation.thirdAngle, vuforia.checkVisibility());
-      /* }
-        else {
-            double[] v = {0, 0, 0};
-            return new Position(v, 0);
-
-            */
-//return currentabspossensors(orient);
-        // }
+        return processor.vuforiaInput(translation, rotation, r);
     }
 
-    public static Position vuftopos(double xtrans, double ytrans, double ztrans, double orientation, String id) {
-        double v[] = new double[3];
 
-        v[0] = xtrans;
-        v[1] = ytrans;
-        v[2] = ztrans;
-        if (id.equals("Front-Craters") || id.equals("Red-Footprint")) {
-            orientation = orientation + 180;
-        }
-        return new Position(v, orientation - 180);// change based on location of phone (0 on right, -180 on left, -90 on front, etc..)
+    public void phoneCheck() throws InterruptedException {
+        String value = vuforia.checkVisibility();
 
-
-    }
-
-    /*
-    public  Position currentabspossensors(double orient){
-        //only use when snapped to nearest axis
-        double[] w = new double[3];
-        if((orient > 45.0) && (orient <135.0)){
-            if(rangeDistanceright() > rangeDistanceleft()){
-                w[0] = -72 + rangeDistanceleft();
-                w[1] = 72-rangeDistancefront();
-
-            }
-            else {
-                w[0] = 72 - rangeDistanceright();
-                w[1] = 72-rangeDistancefront();
-
-
-            }
-
-        }
-        if((orient >= -45.0) && (orient <= 45.0)){
-            if(rangeDistanceright() > rangeDistanceleft()){
-                w[1] = 72 - rangeDistanceleft();
-                w[0] = 72-rangeDistancefront();
-
-            }
-            else {
-                w[1] = -72 + rangeDistanceright();
-                w[0] = 72-rangeDistancefront();
-
-
-            }
-
-        }
-
-        if((orient <= -45.0) && (orient >= -135.0)){
-            if(rangeDistanceright() > rangeDistanceleft()){
-                w[0] = 72 - rangeDistanceleft();
-                w[1] = -72 + rangeDistancefront();
-
-            }
-            else {
-                w[0] = -72 + rangeDistanceright();
-                w[1] = -72+rangeDistancefront();
-
-
-            }
-
-        }
-        if((orient >= -135.0 && orient < 0) && (orient <= 135 && orient >=0)){
-            if(rangeDistanceright() > rangeDistanceleft()){
-                w[1] = -72 + rangeDistanceleft();
-                w[0] = -72 + rangeDistancefront();
-
-            }
-            else {
-                w[1] = 72 - rangeDistanceright();
-                w[0] = -72+rangeDistancefront();
-
-
-            }
-
-        }
-        return new Position(w,orient);
-    }
-*/
-    public Position motortoabs(Rover.Position p) {
-        double xval = p.returnv()[0] * Math.cos(p.returno()) - p.returnv()[1] * Math.sin(p.returno());
-        double yval = p.returnv()[1] * Math.cos(p.returno()) + p.returnv()[0] * Math.sin(p.returno());
-        double[] a = {xval, yval, p.returnv()[2]};
-        return new Rover.Position(a, p.returno());
-
-    }
-
-    public Position abstomotorCoord(Position p) {
-        double xval = p.returnv()[0] * Math.cos(Math.toRadians(p.returno())) + p.returnv()[1] * Math.sin(Math.toRadians(p.returno()));
-        double yval = p.returnv()[1] * Math.cos(Math.toRadians(p.returno())) - p.returnv()[0] * Math.sin(Math.toRadians(p.returno()));
-        double[] a = {xval, yval, p.returnv()[2]};
-        return new Position(a, p.returno());
-
-    }
-
-    public Position move(Position startpos, Position endpos) throws InterruptedException {
-        double orientMotorcoord = 0;
-        Position start = abstomotorCoord(startpos);
-        Position end = abstomotorCoord(endpos);
-        double dify = end.returnv()[1] - start.returnv()[1];
-        double difx = end.returnv()[0] - start.returnv()[0];
-
-
-        if (difx >= 0) {
-            driveTrainEncoderMovement(0.5, difx, 500, 100, movements.right);
-
-        } else {
-            driveTrainEncoderMovement(0.5, Math.abs(difx), 500, 100, movements.left);
-
-
-        }
-        if (dify >= 0) {
-            driveTrainEncoderMovement(0.5, dify, 500, 100, movements.forward);
-
-        } else {
-            driveTrainEncoderMovement(0.5, Math.abs(dify), 500, 100, movements.backward);
-
-
-        }
-        endpos.updateOrient(endpos.returno() + orientMotorcoord);
-        return getCurrentPosition(); //returns abs pos
-    }
-
-    public Position moveusingvuf(Position endpos) throws InterruptedException {
-        double orientMotorcoord = 0;
-        phoneSwivel();
-
-        Position end = abstomotorCoord(new Position(endpos.returnv(), getCurrentPosition().returno() + (servo.getPosition() - 0.47) * 300));
-
-        if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
-
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-            central.telemetry.update();
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.1, movements.right);
-                phoneSwivel();
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
+        switch (value){
+            case "false":
+                central.telemetry.addLine("No Visible Image");
                 central.telemetry.update();
-
-            }
-        } else if (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-            central.telemetry.update();
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.1, movements.left);
-                phoneSwivel();
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-                central.telemetry.update();
-
-            }
-        }
-
-        if (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-            central.telemetry.update();
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.1, movements.forward);
-                phoneSwivel();
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-                central.telemetry.update();
-
-            }
-        } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-            central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-            central.telemetry.update();
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.1, movements.backward);
-                phoneSwivel();
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", end.returnv()[0], end.returnv()[1], end.returno());
-                central.telemetry.update();
-
-            }
-        }
-        if (abstomotorCoord(getCurrentPosition()).returno() > endpos.returno()) {
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returno() - turnangleofmount(getCurrentPosition(), vuforia.checkVisibility()) - endpos.returno()) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.2, cw);
-            }
-
-        } else if (abstomotorCoord(getCurrentPosition()).returno() < endpos.returno()) {
-            while (Math.abs((abstomotorCoord(getCurrentPosition()).returno() - turnangleofmount(getCurrentPosition(), vuforia.checkVisibility())) - endpos.returno()) > 5 && central.opModeIsActive()) {
-                driveTrainMovement(0.2, ccw);
-            }
-
-        }
-        return getCurrentPosition();
-    }
-
-    public void ultrasonicturndepot(int degrees, turnside d) {
-
-        int a = 45;
-        int b = 135 - degrees;
-
-        // final/sin45 = start/sinb   final = start(sin45)/sinb
-        double start = rangeDistanceFLU();
-
-        if (d == turnside.ccw) {
-            if (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
-                    motorBR.setPower(0.5);
-                    motorFR.setPower(0.5);
-                    motorBL.setPower(-0.5);
-                    motorFL.setPower(-0.5);
-
-                }
-            } else if (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
-                    motorBR.setPower(0.5);
-                    motorFR.setPower(0.5);
-                    motorBL.setPower(-0.5);
-                    motorFL.setPower(-0.5);
-
-                }
-            }
-        } else if (d == turnside.cw) {
-            if (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistanceFLU() < start * Math.sin(45) / Math.sin(b)) {
-                    motorBR.setPower(-0.5);
-                    motorFR.setPower(-0.5);
-                    motorBL.setPower(0.5);
-                    motorFL.setPower(0.5);
-
-                }
-            } else if (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
-                while (rangeDistanceFLU() > start * Math.sin(45) / Math.sin(b)) {
-                    motorBR.setPower(-0.5);
-                    motorFR.setPower(-0.5);
-                    motorBL.setPower(0.5);
-                    motorFL.setPower(0.5);
-
-                }
-            }
-
-        }
-
-    }
-
-    public Position vufmovetest(Position endpos, double phoneangle) throws InterruptedException {
-
-
-        double orientMotorcoord = 0;
-        endpos.updateOrient(getCurrentPosition().returno());
-
-        Position end = abstomotorCoord(new Position(endpos.returnv(), getCurrentPosition().returno() - phoneangle));
-        central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-        central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-        central.telemetry.update();
-
-        if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it x");
-            central.telemetry.update();
-
-        } else if (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]) > 2 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it x");
-            central.telemetry.update();
-
-        }
-
-        if (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it y");
-            central.telemetry.update();
-
-        } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
-
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[1] - end.returnv()[1]) > 2 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it y");
-            central.telemetry.update();
-
-        }
-        if (abstomotorCoord(getCurrentPosition()).returno() - phoneangle > endpos.returno()) {
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returno() - phoneangle - endpos.returno()) > 5 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it orient");
-            central.telemetry.update();
-
-
-        } else if (abstomotorCoord(getCurrentPosition()).returno() - phoneangle < endpos.returno()) {
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returno() - phoneangle - endpos.returno()) > 5 && central.opModeIsActive()) {
-                central.telemetry.addData("current position", "{x, y, orient} = %.0f, %.0f, %.0f", getCurrentPosition().returnv()[0], getCurrentPosition().returnv()[1], getCurrentPosition().returno());
-                central.telemetry.addData("current motor position", "{x, y, orient} = %.0f, %.0f, %.0f", abstomotorCoord(getCurrentPosition()).returnv()[0], abstomotorCoord(getCurrentPosition()).returnv()[1], abstomotorCoord(getCurrentPosition()).returno());
-                central.telemetry.update();
-
-            }
-            central.telemetry.addLine("got it orient");
-            central.telemetry.update();
-
-
-        }
-        return getCurrentPosition();
-    }
-
-    public Position bettermove(Position endpos, double phoneangle) throws InterruptedException {
-        double orientMotorcoord = 0;
-
-
-        Position end = abstomotorCoord(new Position(endpos.returnv(), getCurrentPosition().returno() - phoneangle));
-        while (Math.sqrt(Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]), 2) + Math.pow(Math.abs(abstomotorCoord(getCurrentPosition()).returnv()[0] - end.returnv()[0]), 2)) > 3 && central.opModeIsActive()) {
-
-            if (abstomotorCoord(getCurrentPosition()).returnv()[0] < end.returnv()[0]) {
-
-                driveTrainMovement(0.5, movements.right);
-
-
-            } else if (abstomotorCoord(getCurrentPosition()).returnv()[0] > end.returnv()[0]) {
-
-                driveTrainMovement(0.5, movements.left);
-
-
-            } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] < end.returnv()[1]) {
-
-                driveTrainMovement(0.5, movements.forward);
-
-
-            } else if (abstomotorCoord(getCurrentPosition()).returnv()[1] > end.returnv()[1]) {
-
-                driveTrainMovement(0.5, movements.backward);
-
-
-            }
-        }
-        if (abstomotorCoord(getCurrentPosition()).returno() - phoneangle > endpos.returno()) {
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returno() - phoneangle - endpos.returno()) > 5) {
-                driveTrainMovement(0.5, movements.cw);
-            }
-
-        } else if (abstomotorCoord(getCurrentPosition()).returno() - phoneangle < endpos.returno()) {
-            while (Math.abs(abstomotorCoord(getCurrentPosition()).returno() - phoneangle - endpos.returno()) > 5) {
-                driveTrainMovement(0.5, ccw);
-            }
-
-        }
-        return getCurrentPosition();
-    }
-
-    public double paralleloffsetfromimage(Position pos, String id) {
-        /*
-        if (setups == VuforiaHandler.type.images || setups == VuforiaHandler.type.both) {
-            // Load the data sets that for the trackable objects. These particular data
-            // sets are stored in the 'assets' part of our application.
-            targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
-            blueRover = targetsRoverRuckus.get(0);
-            blueRover.setName("Blue-Rover");
-            redFootprint = targetsRoverRuckus.get(1);
-            redFootprint.setName("Red-Footprint");
-            frontCraters = targetsRoverRuckus.get(2);
-            frontCraters.setName("Front-Craters");
-            backSpace = targetsRoverRuckus.get(3);
-            backSpace.setName("Back-Space");
-        }
-            // For convenience, gather together all the trackable objects in one easily-iterable collection */
-/*
-            allTrackables.addAll(targetsRoverRuckus);
-
-        VuforiaTrackables targetsRoverRuckus = this.vuforia.loadTrackablesFromAsset("RoverRuckus");
-        VuforiaTrackable blueRover = targetsRoverRuckus.get(0);
-        blueRover.setName("Blue-Rover");
-        VuforiaTrackable redFootprint = targetsRoverRuckus.get(1);
-        redFootprint.setName("Red-Footprint");
-        VuforiaTrackable frontCraters = targetsRoverRuckus.get(2);
-        frontCraters.setName("Front-Craters");
-        VuforiaTrackable backSpace = targetsRoverRuckus.get(3);
-        backSpace.setName("Back-Space");
-
-        for (VuforiaTrackable trackable : allTrackables) {
-            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                telemetry.addData("Visible Target", trackable.getName());
-            }
-        }
-        */
-
-        if (id == "Blue-Rover") {
-            return pos.returnv()[0];
-
-        } else if (id == "Red-Footprint") {
-            return -pos.returnv()[0];
-
-
-        } else if (id == "Front-Craters") {
-            return (pos.returnv()[1]);
-
-        } else if (id == "Back-Space") {
-            return -pos.returnv()[1];
-
-
-        } else {
-            return 0;
-        }
-    }
-
-    public double perpendiculatoffsetfromimage(Position pos, String id) {
-
-        if (id == "Blue-Rover") {
-            return Math.abs(72 - pos.returnv()[1]);
-
-        } else if (id == "Red-Footprint") {
-            return Math.abs(-72 - pos.returnv()[1]);
-
-
-        } else if (id == "Front-Craters") {
-            return Math.abs(-72 - pos.returnv()[0]);
-
-        } else if (id == "Back-Space") {
-            return Math.abs(72 - pos.returnv()[0]);
-
-
-        } else {
-            return 1;
-        }
-    }
-
-    public double turnangleofmount(Position pos, String id) {
-        return Math.atan((paralleloffsetfromimage(pos, id) / perpendiculatoffsetfromimage(pos, id)));
-
-    }
-
-    public void phoneSwivel() {
-        String image = "NONE";
-        targetVisible = false;
-        for (VuforiaTrackable trackable : vuforia.allTrackables) {
-            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                targetVisible = true;
-                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
-                image = trackable.getName();
-                if (robotLocationTransform != null) {
-                    vuforia.lastLocation = robotLocationTransform;
-                }
                 break;
-            }
+            default:
+                VectorF translation = vuforia.lastLocation.getTranslation();
+                central.telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
 
-        }
-        if (targetVisible) {
-            // express position (translation) of robot in inches.
-            VectorF translation = vuforia.lastLocation.getTranslation();
+                // express the rotation of the robot in degrees.
+                Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+                central.telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
 
-            // express the rotation of the robot in degrees.
-            Orientation rotation = Orientation.getOrientation(vuforia.lastLocation, EXTRINSIC, XYZ, DEGREES);
+                processor.vuforiaInput(translation, rotation, value);
+                double angle = processor.phoneMountAngle();
+                servo.setPosition(angle);
+                central.telemetry.addData("Phone mount pos: ", angle);
 
-            if (image.equals(vuforia.frontCraters.getName()) || image.equals(vuforia.backSpace.getName())) {
-                double angle = Math.atan(translation.get(1) / (72 - Math.abs(translation.get(0))));
-                position = angle / Math.PI;
-                servo.setPosition(0.4 + position);
-                central.sleep(100);
+                central.telemetry.addData("Angle: ", Math.toDegrees((angle - 0.47)* Math.toRadians(300)));
+                central.telemetry.update();
                 central.idle();
-
-            } else if (image.equals(vuforia.redFootprint.getName()) || image.equals(vuforia.blueRover.getName())) {
-                double angle = -Math.atan((72 - Math.abs(translation.get(0))) / translation.get(1));
-                position = angle / Math.PI;
-                servo.setPosition(0.4 + position);
-                central.sleep(100);
-                central.idle();
-
-            }
-        }
-    }
-
-    public void updatetransorient() {
-       /* OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES,
-                        (float)servo.getPosition(), 0, 0));//change this for turning
-
-
-          Let all the trackable listeners know where the phone is.
-        for (VuforiaTrackable trackable : allTrackables)
-        {
-            ((VuforiaTrackableDefaultListener)trackable.getListener()).setPhoneInformation(phoneLocationOnRobot, localizerParams.cameraDirection);
-        }
-
-        targetVisible = false;
-        for (VuforiaTrackable trackable : allTrackables) {
-            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                targetVisible = true;
-
-                // getUpdatedRobotLocation() will return null if no new information is available since
-                // the last time that call was made, or if the trackable is not currently visible.
-                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
-                if (robotLocationTransform != null) {
-                    lastLocation = robotLocationTransform;
-                }
                 break;
-            }
         }
-
-        // Provide feedback as to where the robot is located (if we know).
-        if (targetVisible) {
-            // express position (translation) of robot in inches.
-            translation = lastLocation.getTranslation();
-            // express the rotation of the robot in degrees.
-            rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-        }
-        */
     }
 
     public void ultrasonicParallelToWall(double speed ,double tolerance) throws InterruptedException {
@@ -1483,22 +951,14 @@ public class Rover {
                 BRUDistance = BRU.getDistance(DistanceUnit.INCH);
 
                 driveTrainMovement(speed, movements);
-        }
+            }
         }
     }
-
-
 
 
     //-------------------------------------Sensors-------------------------------------------
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
-    }
-
-    public void turntest(String id) throws InterruptedException {
-        servo.setPosition(((Math.toDegrees(turnangleofmount(getCurrentPosition(),id)))/360));
-        central.telemetry.addData("current motor position","{parallel, perpendicular, angle} = %.0f, %.0f, %.0f" , paralleloffsetfromimage(getCurrentPosition(),id), perpendiculatoffsetfromimage(getCurrentPosition(),id),turnangleofmount(getCurrentPosition(),id));
-        central.telemetry.update();
     }
 
 

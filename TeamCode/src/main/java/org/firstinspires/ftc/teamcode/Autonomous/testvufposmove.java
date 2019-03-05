@@ -16,7 +16,7 @@ public class testvufposmove extends AutonomousControl {
         setup(runtime, Rover.setupType.vuforia);
         while (opModeIsActive()) {
             double[] x = {24,12,10};
-            rob.vufmovetest(new Rover.Position(x,90), 0);
+          //  rob.vufmovetest(new Rover.Position(x,90), 0);
             sleep(10000);
         }
     }

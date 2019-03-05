@@ -26,6 +26,7 @@ public class anyDirectionTest extends TeleOpControl {
             standardGamepadData();
 
             if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
+
                 double angle = (Math.PI *2.0 + Math.atan2(yAxis1, -xAxis1))%(Math.PI * 2.0);
                 telemetry.addData("Angle: ", Math.toDegrees(angle));
                 telemetry.update();
