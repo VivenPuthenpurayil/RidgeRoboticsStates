@@ -242,6 +242,8 @@ public class Rover {
 
     PositionProcessor processor;
 
+    public ColorSensor color;
+
 
     //-----         LATCHING FUNCTIONS          --------------
     public void latchInit() throws InterruptedException {
@@ -307,7 +309,9 @@ public class Rover {
         servo = servo(phoneSwivelS, Servo.Direction.FORWARD, 0, 1, 0.47);
 
     }
-
+    public void setupColor()throws InterruptedException{
+        color = colorSensor("color",true);
+    }
     public void setupSensors() {
 
 
@@ -699,6 +703,16 @@ public class Rover {
 
 
     }
+    public void colorsample() throws java.lang.InterruptedException
+    {
+        color.enableLed(true);
+        driveTrainMovement(0.2,movements.left);
+        while(!(color.red()>2*color.blue()&&color.green()>2*color.blue()&&color.red()>30&&color.blue()>30)){
+        }
+        stopDrivetrain();
+        driveTrainMovement(0.5,movements.backward);
+    }
+
     public void sample() {
         if (sampleStatus==SamplingOrder.UNCHECKED) {
             //Sample
@@ -800,12 +814,12 @@ public class Rover {
 
 
     public double[] superstrafe(double dir, double velo, double angvelo, movements tdir) {
-        double[] comp1 = anyDirection(velo, dir - getDirection());
+        double[] comp1 = anyDirection(velo, 90 + dir - getDirection());
         double[] comp2 = superturn(angvelo,tdir);
         double[] retval = new double[2];
         for (int i = 0; i < 4; i++) {
-            drivetrain[i].setPower(comp1[i%2]+comp2[i%2]);
-            retval[i % 2] = comp1[i % 2] + comp2[i % 2];
+            drivetrain[i].setPower(StrafetoTotalPower*comp1[i%2]+comp2[i%2]);
+            retval[i % 2] = StrafetoTotalPower*comp1[i % 2] + comp2[i % 2];
         }
         return retval;
     }
@@ -960,6 +974,7 @@ public class Rover {
     public double getDirection(){
         return (this.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle-initorient+720)%360;
     }
+
 
 
 }
