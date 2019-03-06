@@ -79,6 +79,7 @@ public class BlueCrater extends AutonomousControl {
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                     if (updatedRecognitions != null) {
                         telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        telemetry.update();
                         for (Recognition recognition : updatedRecognitions) {
                             while (!recognition.getLabel().equals(LABEL_GOLD_MINERAL) || !recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
                                 rob.driveTrainMovement(0.3, Rover.movements.cw);
@@ -100,10 +101,12 @@ public class BlueCrater extends AutonomousControl {
                         }
 
                     }
+                    telemetry.addData("o: ", o);
                     telemetry.update();
                     switch (o) {
                         case center:
                             rob.driveTrainEncoderMovement(0.8, .5, 5, 5, Rover.movements.forward);
+                             break;
                         case left:
                             rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
                             break;
