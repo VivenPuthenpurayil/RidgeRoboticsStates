@@ -48,88 +48,95 @@ public class BlueCrater extends AutonomousControl {
         setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu);
 
         rob.servo.setPosition(0.43);
+        initVuforia();
 
+        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            initTfod();
+        } else {
+            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        }
 
-        while (opModeIsActive()) {
-            telemetry.addLine("Deploy time");
-            telemetry.update();
-
-            rob.deploy();
-            rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
-
-            initVuforia();
-
-            if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-                initTfod();
-            } else {
-                telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        if (opModeIsActive()) {
+            /** Activate Tensor Flow Object Detection. */
+            if (tfod != null) {
+                tfod.activate();
             }
 
 
-            if (opModeIsActive()) {
-                /** Activate Tensor Flow Object Detection. */
-                if (tfod != null) {
-                    tfod.activate();
-                }
+            while (opModeIsActive()) {
+                telemetry.addLine("Deploy time");
+                telemetry.update();
 
-                while (opModeIsActive()) {
-                    int positionCounter = 0;
-                    if (tfod != null) {
-                        // getUpdatedRecognitions() will return null if no new information is available since
-                        // the last time that call was made.
-                        List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                        if (updatedRecognitions != null) {
-                            telemetry.addData("# Object Detected", updatedRecognitions.size());
-                            for (Recognition recognition : updatedRecognitions) {
-                                while (!recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                    rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
-                                    positionCounter++;
-                                }
-                                if (positionCounter == 0) {
-                                    o = pos.right;
-                                } else if (positionCounter == 1) {
+
+                rob.deploy();
+                rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
+
+
+                int positionCounter = 0;
+                if (tfod != null) {
+                    // getUpdatedRecognitions() will return null if no new information is available since
+                    // the last time that call was made.
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                    if (updatedRecognitions != null) {
+                        telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        for (Recognition recognition : updatedRecognitions) {
+                            while (!recognition.getLabel().equals(LABEL_GOLD_MINERAL) || !recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
+                                rob.driveTrainMovement(0.3, Rover.movements.cw);
+                            }
+                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)){
+                                o = pos.right;
+                                break;
+                            }
+                            else {
+                                rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
+                                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)){
                                     o = pos.center;
-                                } else {
-                                    o = pos.left;
+                                    break;
+                                }else {
+                                    o = pos.right;
+                                    break;
                                 }
                             }
-
                         }
-                        telemetry.update();
-                    }
 
+                    }
+                    telemetry.update();
                     switch (o) {
                         case center:
-                            rob.driveTrainEncoderMovement(0.8, 1.5, 5, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, .5, 5, 5, Rover.movements.forward);
                         case left:
-                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
                             break;
                         case right:
-                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
                             break;
                         default:
-                            rob.driveTrainEncoderMovement(0.8, 3, 5, 50, Rover.movements.forward);
+                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
                             break;
                     }
 
-                    /*
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.collectorEject, rob.collector);
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearIn, rob.linear);
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armDown, rob.arm);
+                /*
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.collectorEject, rob.collector);
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearIn, rob.linear);
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armDown, rob.arm);
 
-                    rob.turn(180, Rover.turnside.ccw, .3, Rover.axis.center);
-                    rob.driveTrainEncoderMovement(0.8, 7, 5, 50, Rover.movements.forward);
+                rob.turn(180, Rover.turnside.ccw, .3, Rover.axis.center);
+                rob.driveTrainEncoderMovement(0.8, 7, 5, 50, Rover.movements.forward);
 
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
-                    rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
-                    */
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
+                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
+                */
                 }
 //d
             }
         }
+        if (tfod != null) {
+            tfod.shutdown();
+        }
     }
+
 
     public int checkMinerals(int gold, int sil1, int sil2){
         if (gold == -1 && sil1 != -1 && sil2 != -1){
