@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Control;
 
+import android.app.Activity;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -22,6 +24,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.FRONT;
 import static org.firstinspires.ftc.teamcode.Control.Constants.CAMERA_CHOICE;
+import static org.firstinspires.ftc.teamcode.Control.Constants.TENSORFLOW_KEY;
 import static org.firstinspires.ftc.teamcode.Control.Constants.VUFORIA_KEY;
 import static org.firstinspires.ftc.teamcode.Control.Constants.mmFTCFieldWidth;
 import static org.firstinspires.ftc.teamcode.Control.Constants.mmTargetHeight;
@@ -31,11 +34,12 @@ public class VuforiaHandler {
 
     public int CAMERA_FORWARD_DISPLACEMENT = 0, CAMERA_VERTICAL_DISPLACEMENT = 0, CAMERA_LEFT_DISPLACEMENT = 0;
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
-    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+    public static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
     private final HardwareMap hardwareMap;
     private final Telemetry telemetry;
     public TFObjectDetector tfod;
+
 
     public OpenGLMatrix blueRoverLocationOnField, redFootprintLocationOnField, frontCratersLocationOnField, backSpaceLocationOnField, phoneLocationOnRobot;
     public VuforiaTrackable blueRover, redFootprint, frontCraters, backSpace;
@@ -60,7 +64,14 @@ public class VuforiaHandler {
     public VuforiaHandler(Central central, type setups) {
         hardwareMap = central.hardwareMap;
         telemetry = central.telemetry;
+        if (setups == type.minerals || setups == type.both){
+            if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+                initTfod();
+            } else {
+                telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+            }
 
+        }
 
         if (setups == type.images || setups == type.both) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -175,13 +186,7 @@ public class VuforiaHandler {
 
         }
 
-        if (setups == type.minerals || setups == type.both){
-            if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-                initTfod();
-            } else {
-                telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-            }
-        }
+
 
 
     }
@@ -192,11 +197,12 @@ public class VuforiaHandler {
 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.vuforiaLicenseKey = TENSORFLOW_KEY;
         parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
 
+        ClassFactory instance = ClassFactory.getInstance();
         //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+        tensorflowVuforia = instance.createVuforia(parameters);
 
         // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
 

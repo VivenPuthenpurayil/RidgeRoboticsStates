@@ -10,8 +10,11 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
+import org.firstinspires.ftc.teamcode.Control.VuforiaHandler;
 
 import java.util.List;
+
+import static org.firstinspires.ftc.teamcode.Control.VuforiaHandler.LABEL_GOLD_MINERAL;
 
 @Autonomous(name="Blue Crater", group ="Smart")
 public class BlueCrater extends AutonomousControl {
@@ -21,167 +24,129 @@ public class BlueCrater extends AutonomousControl {
         left, right, center, unknown
     }
 
-    pos o = pos.unknown;
-
-    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
-    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
-    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-
-    private static final String VUFORIA_KEY = " AcowzAr/////AAABmZ1O2qADtkUEtt6Ubzpq/jpUtz5mLmoeN8h5vCHHyrt+z8HddaupaRFcm9GWPN3OyHX0Pu4J4q/AGcE3K3MrXHCzMqReZXCWIRXfbWw5sFOBKA2b9jQ4PFPamJ1OWeZKmKe8xVHmpaC+KN47xMnIsPOg5EUdvoQPbPA9Tot3I4eeGRiJD2NosRcVqYypb/ubtx1v3kfFA5QxC5ob/mbbRMU5z/A0Sk5mzvaDFpR7qnu1/WbwpdM8Uo2HxjzBeTB3+oTIQ3aFMKhPfgQl1KXZkRRbtdfiVopSwkTT5yZh0H7IgZVAwc7Bk726o+h2z8evOSTuDOkps4+8lYLbBrNUVemer37ET+gQLmbOzd4/8d7q";
-
-    /**
-     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
-     * localization engine.
-     */
-    private VuforiaLocalizer vuforia;
-
-    /**
-     * {@link #tfod} is the variable we will use to store our instance of the Tensor Flow Object
-     * Detection engine.
-     */
-    private TFObjectDetector tfod;
+    private pos o = pos.unknown;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu, Rover.setupType.tensorflow);
 
-        rob.servo.setPosition(0.43);
-        initVuforia();
 
-        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-            initTfod();
-        } else {
-            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
-        }
+
+        telemetry.addLine("Ready!");
+        telemetry.update();
+        waitForStart();
+
 
         if (opModeIsActive()) {
-            /** Activate Tensor Flow Object Detection. */
-            if (tfod != null) {
-                tfod.activate();
-            }
+            telemetry.addLine("Deploy time");
+            telemetry.update();
 
 
-            while (opModeIsActive()) {
-                telemetry.addLine("Deploy time");
-                telemetry.update();
+            rob.deploy();
 
+            rob.turn(40, Rover.turnside.cw, 0.6, Rover.axis.center);
 
-                rob.deploy();
-                rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
-
-
-                int positionCounter = 0;
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if (rob.vuforia.tfod != null) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                boolean obj = false;
+                while (!obj && opModeIsActive()) {
+                    rob.driveTrainMovement(0.05, Rover.movements.ccw);
+                    List<Recognition> updatedRecognitions = rob.vuforia.tfod.getRecognitions();
                     if (updatedRecognitions != null) {
                         telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        if (updatedRecognitions.size() > 0) {
+                            telemetry.addData("recognized", updatedRecognitions.get(0).getLabel());
+                        }
+                        telemetry.addData("oboy: ", o);
                         telemetry.update();
                         for (Recognition recognition : updatedRecognitions) {
-                            while (!recognition.getLabel().equals(LABEL_GOLD_MINERAL) || !recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
-                                rob.driveTrainMovement(0.3, Rover.movements.cw);
-                            }
-                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)){
+                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
                                 o = pos.right;
-                                break;
-                            }
-                            else {
-                                rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
-                                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)){
-                                    o = pos.center;
-                                    break;
-                                }else {
-                                    o = pos.right;
-                                    break;
-                                }
+                                obj = true;
+                                rob.stopDrivetrain();
+                            } else {
+                                obj = true;
+                                rob.stopDrivetrain();
+                                rob.turn(45, Rover.turnside.cw, 0.6, Rover.axis.center);
+                                rob.driveTrainEncoderMovement(0.4, 0.4, 3, 30, Rover.movements.left);
                             }
                         }
 
                     }
-                    telemetry.addData("o: ", o);
+                    telemetry.addData("obj: ", o);
                     telemetry.update();
-                    switch (o) {
-                        case center:
-                            rob.driveTrainEncoderMovement(0.8, .5, 5, 5, Rover.movements.forward);
-                             break;
-                        case left:
-                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
-                            break;
-                        case right:
-                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
-                            break;
-                        default:
-                            rob.driveTrainEncoderMovement(0.8, 1, 5, 5, Rover.movements.forward);
-                            break;
-                    }
-
-                /*
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.collectorEject, rob.collector);
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearIn, rob.linear);
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armDown, rob.arm);
-
-                rob.turn(180, Rover.turnside.ccw, .3, Rover.axis.center);
-                rob.driveTrainEncoderMovement(0.8, 7, 5, 50, Rover.movements.forward);
-
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.armUp, rob.arm);
-                rob.encoderMovement(0.6, 3, 3, 300, Rover.movements.linearOut, rob.linear);
-                */
                 }
-//d
+                if (o == pos.unknown) {
+                    obj = false;
+
+                    while (!obj && opModeIsActive()) {
+                        rob.driveTrainMovement(0.05, Rover.movements.cw);
+                        List<Recognition> updatedRecognitions = rob.vuforia.tfod.getRecognitions();
+                        if (updatedRecognitions != null) {
+                            telemetry.addData("# Object Detected", updatedRecognitions.size());
+                            if (updatedRecognitions.size() > 0) {
+                                telemetry.addData("recognized", updatedRecognitions.get(0).getLabel());
+                            }
+                            telemetry.addData("oboy: ", o);
+                            telemetry.update();
+                            for (Recognition recognition : updatedRecognitions) {
+                                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                    obj = true;
+                                    rob.stopDrivetrain();
+                                    o = pos.center;
+                                } else {
+                                    obj = true;
+                                    rob.stopDrivetrain();
+                                    o = pos.left;
+                                }
+                            }
+
+                        }
+                        telemetry.addData("obj: ", o);
+                        telemetry.update();
+                    }
+                }
+                telemetry.addData("o: ", o);
+                telemetry.update();
+                switch (o) {
+                    case center:
+                        rob.driveTrainEncoderMovement(0.8, 1.5, 5, 500, Rover.movements.forward);
+                        break;
+                    case left:
+                        rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
+                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
+                        break;
+                    case right:
+                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
+                        break;
+                    default:
+                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
+                        break;
+                }
+
             }
+
+
         }
-        if (tfod != null) {
-            tfod.shutdown();
+        if (rob.vuforia.tfod != null) {
+            rob.vuforia.tfod.shutdown();
         }
     }
 
 
-    public int checkMinerals(int gold, int sil1, int sil2){
-        if (gold == -1 && sil1 != -1 && sil2 != -1){
+    public int checkMinerals(int gold, int sil1, int sil2) {
+        if (gold == -1 && sil1 != -1 && sil2 != -1) {
             return 0;
-        }
-        else if (gold != -1 && sil1 == -1 && sil2 != -1){
+        } else if (gold != -1 && sil1 == -1 && sil2 != -1) {
             return 1;
-        }
-        else if (gold != -1 && sil1 != -1 && sil2 == -1){
+        } else if (gold != -1 && sil1 != -1 && sil2 == -1) {
             return 2;
-        }else{
+        } else {
             return -1;
         }
 
-    }
-    /**
-     * Initialize the Vuforia localization engine.
-     */
-
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
-    }
-
-    /**
-     * Initialize the Tensor Flow Object Detection engine.
-     */
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 }

@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ import static org.firstinspires.ftc.teamcode.Control.Rover.movements.cw;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.forward;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.left;
 import static org.firstinspires.ftc.teamcode.Control.Rover.movements.right;
+import static org.firstinspires.ftc.teamcode.Control.VuforiaHandler.LABEL_GOLD_MINERAL;
 
 public class Rover {
 
@@ -247,7 +249,7 @@ public class Rover {
 
     //-----         LATCHING FUNCTIONS          --------------
     public void latchInit() throws InterruptedException {
-        while (!latchingLimit.getState()) {
+        while (!latchingLimit.getState() && !central.isStopRequested()) {
             anyMovement(0.8, Rover.movements.rackCompress, rack);
         }
         rack.setPower(0);
@@ -264,20 +266,52 @@ public class Rover {
         central.telemetry.update();
     }
 
-    public void deploy() throws InterruptedException {
+    public int deploy() throws InterruptedException {
 
+        int x = 0;
+        int g = -1;
         while (!deployingLimit.getState() && central.opModeIsActive()) {
-            anyMovement(0.8, movements.rackExtend, rack);
+            anyMovement(1, movements.rackExtend, rack);
+            if (x == 1){
+                vuforia.tfod.activate();
+            }
+
+            List<Recognition> updatedRecognitions = vuforia.tfod.getUpdatedRecognitions();
+            if (updatedRecognitions != null) {
+                central.telemetry.addData("# Object Detected", updatedRecognitions.size());
+                if (updatedRecognitions.size() == 2) {
+                    int goldMineralX = -1;
+                    int silverMineral1X = -1;
+                    int silverMineral2X = -1;
+                    for (Recognition recognition : updatedRecognitions) {
+                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                            goldMineralX = (int) recognition.getLeft();
+                        } else if (silverMineral1X == -1) {
+                            silverMineral1X = (int) recognition.getLeft();
+                        } else {
+                            silverMineral2X = (int) recognition.getLeft();
+                        }
+                    }
+
+                    if (g == -1) {
+                        g = checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
+                    }
+
+                }
+            }
+            x++;
+
         }
         rack.setPower(0);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         //while(Math.absimu.getAcceleration())
-        driveTrainEncoderMovement(0.3, 0.5, 5, 0, backward);
+        driveTrainEncoderMovement(0.2, 0.5, 5, 0, backward);
         driveTrainEncoderMovement(0.5, 1, 5, 0, left);
-        driveTrainEncoderMovement(0.3, 0.75, 5, 0, forward);
-
+        //driveTrainEncoderMovement(0.2, 0.65, 5, 0, forward);
+return g;
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
+
 
     }
 
@@ -324,19 +358,9 @@ public class Rover {
     }
 
     public void setupVuforia(VuforiaHandler.type s) {
-        if (s == VuforiaHandler.type.both) {
-            vuforia = new VuforiaHandler(central, s);
-            vuforiaMode = true;
-            tensorflowMode = true;
-        }
-        else if (s == VuforiaHandler.type.images){
-            vuforia = new VuforiaHandler(central, s);
-            vuforiaMode = true;
-        }
-        else {
-            vuforia = new VuforiaHandler(central, s);
-            tensorflowMode = true;
-        }
+        vuforia = new VuforiaHandler(central, s);
+        vuforiaMode = (s == VuforiaHandler.type.both || s == VuforiaHandler.type.images);
+        tensorflowMode = (s == VuforiaHandler.type.both || s == VuforiaHandler.type.minerals);
 
     }
     public void setupPositionProcessing(boolean vuforiaMode){
@@ -355,7 +379,7 @@ public class Rover {
         motorBR = motor(motorBRS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
         motorBL = motor(motorBLS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
-        motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
+         motorDriveMode(EncoderMode.ON, motorFR, motorFL, motorBR, motorBL);
     }
 
     public void setupLatching() throws InterruptedException {
@@ -372,7 +396,7 @@ public class Rover {
     public void setupMineralControl() throws InterruptedException{
         arm = motor(armS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
 
-        linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
+        linear = motor(linearS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.BRAKE);
         collector = motor(collectorS, DcMotorSimple.Direction.FORWARD, DcMotor.ZeroPowerBehavior.FLOAT);
 
 
@@ -530,6 +554,64 @@ public class Rover {
 
         }
     }
+
+    public void driveTrainEncoderSuperStrafeMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, double rotationalfactor, movements rotationalDir) throws  InterruptedException{
+
+        int[] targets = new int[drivetrain.length];
+        double[] signs = movement.getDirections();
+
+        // Ensure that the opmode is still active
+        if (central.opModeIsActive()) {
+            // Determine new target position, and pass to motor controller
+
+
+            for (DcMotor motor : drivetrain){
+                int x = Arrays.asList(drivetrain).indexOf(motor);
+                targets[x] = motor.getCurrentPosition() + (int) (signs[x] * wheelAdjust[x] * distance * COUNTS_PER_MOTOR_REV) + (int) (COUNTS_PER_MOTOR_REV * rotationalfactor * rotationalDir.getDirections()[x]);
+            }
+            for (DcMotor motor: drivetrain){
+                int x = Arrays.asList(drivetrain).indexOf(motor);
+                motor.setTargetPosition(targets[x]);
+            }
+            for (DcMotor motor: drivetrain){
+                motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            runtime.reset();
+
+            for (DcMotor motor:drivetrain){
+                motor.setPower(Math.abs(speed));
+            }
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            boolean x = true;
+            while (central.opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (x)) {
+
+                // Display it for the driver.
+                // Allow time for other processes to run.
+                central.idle();
+                for (DcMotor motor: drivetrain){
+                    if (!motor.isBusy()){
+                        x =false;
+                    }
+                }
+            }
+
+            // Stop all motion;
+            for (DcMotor motor: drivetrain){
+                motor.setPower(0);
+            }
+
+            // Turn off RUN_TO_POSITION
+            for (DcMotor motor: drivetrain){
+                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            central.sleep(waitAfter);
+
+
+        }
+    }
     public void encoderMovement(double speed, double distance, double timeoutS, long waitAfter, movements movement, DcMotor... motors) throws  InterruptedException{
 
         int[] targets = new int[motors.length];
@@ -613,7 +695,7 @@ public class Rover {
         try {
             switch (rotation_Axis) {
                 case center:
-                    driveTrainMovement(speed, (direction != turnside.cw) ? cw : ccw);
+                    driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
                     break;
                 case back:
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
@@ -626,10 +708,7 @@ public class Rover {
             isnotstopped = false;
         }
 
-        while (!((end <= getDirection()+1) && end > getDirection() - 1) && central.opModeIsActive() && isnotstopped) {
-            if (end + 1 < getDirection()){
-                driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
-            }
+        while ((((end - getDirection()) > 1 && turnside.cw == direction) || (turnside.cw != direction && end - getDirection() < -1)) && central.opModeIsActive() && isnotstopped) {
             central.telemetry.addData("IMU Inital: ", start);
             central.telemetry.addData("IMU Final Projection: ", end);
             central.telemetry.addData("IMU Orient: ", getDirection());
@@ -639,6 +718,11 @@ public class Rover {
             stopDrivetrain();
         } catch (InterruptedException e) {
         }
+
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
+        }
+        stopDrivetrain();
 
     }
 
@@ -670,6 +754,139 @@ public class Rover {
 
         }
         central.sleep(duration);
+        stopDrivetrain();
+        central.sleep(waitAfter);
+    }
+    public void driveTrainIMUSwingTurnMovement(double speed, movements movement, long waitAfter, int rotationDegrees, double rotationfactor, turnside rotDir) throws InterruptedException{
+        double[] signs = movement.getDirections();
+
+        double start = getDirection();
+
+        double end = (start + ((rotDir == turnside.cw) ? rotationDegrees : -rotationDegrees) + 360) % 360;
+        double[] speedValues = anyDirection(speed, 90 - start + getDirection());
+        double[] speeds= new double[4];
+        for (int i = 0; i < drivetrain.length; i++) {
+            if (i == 0 || i == 4) {
+                speeds[i] = (speedValues[1]);
+            } else {
+                speeds[i] = (speedValues[0]);
+            }
+        }
+
+
+        while ((((end - getDirection()) > 1 && turnside.cw == rotDir) || (turnside.cw != rotDir && end - getDirection() < -1)) && central.opModeIsActive()) {
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+
+            for (DcMotor motor: drivetrain){
+                int x = Arrays.asList(drivetrain).indexOf(motor);
+                motor.setPower(signs[x] * speeds[x] + rotationfactor * movements.valueOf(rotDir.name()).getDirections()[x]);
+                central.telemetry.addData("motor " + x, signs[x] * speeds[x] + rotationfactor * movements.valueOf(rotDir.name()).getDirections()[x]);
+
+            }
+            central.telemetry.update();
+        }
+
+        stopDrivetrain();
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            driveTrainMovement(0.1, (rotDir == turnside.cw) ? ccw : movements.cw);
+        }
+
+
+        stopDrivetrain();
+        central.sleep(waitAfter);
+    }
+    public void driveTrainIMUSwingTurnMovementOrig(double speed, movements movement, long waitAfter, int rotationDegrees, double rotationfactor, turnside rotDir) throws InterruptedException{
+        double[] signs = movement.getDirections();
+
+        double start = getDirection();
+
+        double end = (start + ((rotDir == turnside.cw) ? rotationDegrees : -rotationDegrees) + 360) % 360;
+
+
+
+        while ((((end - getDirection()) > 1 && turnside.cw == rotDir) || (turnside.cw != rotDir && end - getDirection() < -1)) && central.opModeIsActive()) {
+            double[] speedValues = anyDirection(speed, 90 + start - getDirection());
+            double[] speeds= new double[4];
+            for (int i = 0; i < drivetrain.length; i++) {
+                if (i == 0 || i == 3) {
+                    speeds[i] = (speedValues[0]);
+                } else {
+                    speeds[i] = (speedValues[1]);
+                }
+            }
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+
+            for (DcMotor motor: drivetrain){
+                int x = Arrays.asList(drivetrain).indexOf(motor);
+                motor.setPower(speeds[x] + rotationfactor * -movements.valueOf(rotDir.name()).getDirections()[x]);
+                central.telemetry.addData("motor " + x, speeds[x] + rotationfactor * -movements.valueOf(rotDir.name()).getDirections()[x]);
+
+            }
+            central.telemetry.update();
+        }
+
+        stopDrivetrain();
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            driveTrainMovement(0.1, (rotDir == turnside.cw) ? ccw : movements.cw);
+        }
+
+
+        stopDrivetrain();
+        central.sleep(waitAfter);
+    }
+
+    public void driveTrainIMUSuperStrafeMovement(double speed, movements movement, long waitAfter, int rotationDegrees, double rotationfactor, turnside rotDir) throws InterruptedException{
+        double[] signs = movement.getDirections();
+
+        double start = getDirection();
+
+        double end = (start + ((rotDir == turnside.cw) ? rotationDegrees : -rotationDegrees) + 360) % 360;
+        double[] speedValues = anyDirection(speed, 90 + start - getDirection());
+        double[] speeds= new double[4];
+        for (int i = 0; i < drivetrain.length; i++) {
+            if (i == 0 || i == 3) {
+                speeds[i] = (speedValues[0]);
+            } else {
+                speeds[i] = (speedValues[1]);
+            }
+        }
+
+        int p = 0;
+
+        boolean rotate = false;
+        while ((((end - getDirection()) > 1 && turnside.cw == rotDir) || (turnside.cw != rotDir && end - getDirection() < -1)) && central.opModeIsActive()) {
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+            if (p % 10 == 0){
+                rotate = !rotate;
+            }
+            for (DcMotor motor: drivetrain){
+                int x = Arrays.asList(drivetrain).indexOf(motor);
+                if (rotate) {
+                    motor.setPower(rotationfactor * movements.valueOf(rotDir.name()).getDirections()[x]);
+                    central.telemetry.addData("motor " + x, rotationfactor * movements.valueOf(rotDir.name()).getDirections()[x]);
+                }
+                else {
+                    motor.setPower(speeds[x]);
+                    central.telemetry.addData("motor " + x, speeds[x]);
+                }
+
+            }
+            central.telemetry.update();
+            p++;
+        }
+
+        stopDrivetrain();
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            driveTrainMovement(0.1, (rotDir == turnside.cw) ? ccw : movements.cw);
+        }
+
+
         stopDrivetrain();
         central.sleep(waitAfter);
     }
@@ -774,8 +991,8 @@ public class Rover {
         tl(1, 0, 0, -1),
         bl(0, 1, -1, 0),
         br(-1, 0, 0, 1),
-        ccw(1, 1, 1, 1),
-        cw(-1, -1, -1, -1),
+        cw(1, 1, 1, 1),
+        ccw(-1, -1, -1, -1),
         cwback(-1, -1, 0, 0),
         ccwback(1, 1, 0, 0),
         cwfront(0, 0, -1, -1),
@@ -826,6 +1043,7 @@ public class Rover {
     }
 
 
+
     public static double[] anyDirection(double speed, double angleDegrees) {
         double theta = Math.toRadians(angleDegrees);
         double beta = Math.atan(yToXRatio);
@@ -851,13 +1069,10 @@ public class Rover {
     public void driveTrainMovementAngle(double speed, double angle) {
 
         double[] speeds = anyDirection(speed, angle);
-        for (int i = 0; i < drivetrain.length; i++) {
-            if (i == 0 || i == 4) {
-                drivetrain[i].setPower(speeds[1]);
-            } else {
-                drivetrain[i].setPower(speeds[0]);
-            }
-        }
+        motorFR.setPower(movements.forward.directions[0] * speeds[0]);
+        motorFL.setPower(movements.forward.directions[1] * speeds[1]);
+        motorBR.setPower(movements.forward.directions[2] * speeds[1]);
+        motorBL.setPower(movements.forward.directions[3] * speeds[0]);
 
     }
 

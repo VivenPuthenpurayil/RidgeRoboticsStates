@@ -15,16 +15,17 @@ public abstract class Central extends LinearOpMode {
     }
 
     public void setup(ElapsedTime rtime, Rover.setupType... setup) throws InterruptedException {
-        this.setRob(new Rover(hardwareMap, runtime, this, setup));
+            this.setRob(new Rover(hardwareMap, runtime, this, setup));
         setRuntime(rtime);
-        this.waitForStart();
-        this.runtime.reset();
-        if (rob.vuforiaMode){
-        //    rob.vuforia.targetsRoverRuckus.activate();
+        /*if (rob.vuforiaMode){
+            //    rob.vuforia.targetsRoverRuckus.activate();
         }
         if (rob.tensorflowMode){
             rob.vuforia.tfod.activate();
-        }
+        }*/
+        this.waitForStart();
+        this.runtime.reset();
+
 
     }
 
