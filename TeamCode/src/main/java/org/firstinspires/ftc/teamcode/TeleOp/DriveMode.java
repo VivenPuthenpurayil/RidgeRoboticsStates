@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Control.Rover;
 import org.firstinspires.ftc.teamcode.Control.TeleOpControl;
+import org.opencv.core.Mat;
 
 import static org.firstinspires.ftc.teamcode.Control.Constants.ROTATION_SPEED;
 
@@ -17,8 +18,10 @@ public class DriveMode extends TeleOpControl {
     private ElapsedTime runtime = new ElapsedTime();
     public void runOpMode() throws InterruptedException{
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latchingTele, Rover.setupType.mineralControl);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latchingTele, Rover.setupType.mineralControl, Rover.setupType.imu);
 
+
+        double IMUOrientB = -1;
 
         while (opModeIsActive()) {
 
@@ -26,10 +29,10 @@ public class DriveMode extends TeleOpControl {
             standardGamepadData();
 
 
-            if (rightStickButtonPressed) {
+            if (leftStickButtonPressed) {
                 // CLOCKWISE
                 rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.cw);
-            } else if (leftStickButtonPressed) {
+            } else if (rightStickButtonPressed) {
                 // COUNTERCLOCKWISE
                 rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.ccw);
             }
@@ -106,6 +109,20 @@ public class DriveMode extends TeleOpControl {
             }
             else {
                 rob.arm.setPower(0);
+            }
+
+
+            if (gamepad1.b && IMUOrientB == -1){
+                IMUOrientB = rob.getDirection();
+            }else if (gamepad1.b){
+                double angle = rob.calculateDifferenceBetweenAngles(rob.getDirection(), IMUOrientB);
+                if (angle > 0){
+                    rob.teleturn((float) (Math.abs(angle)), Rover.turnside.cw, 0.9, Rover.axis.center, gamepad1);
+                }
+                else {
+                    rob.teleturn((float) (Math.abs(angle)), Rover.turnside.ccw, 0.9, Rover.axis.center, gamepad1);
+
+                }
             }
 
 

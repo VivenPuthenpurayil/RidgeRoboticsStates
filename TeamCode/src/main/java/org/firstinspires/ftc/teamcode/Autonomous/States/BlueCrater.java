@@ -3,18 +3,9 @@ package org.firstinspires.ftc.teamcode.Autonomous.States;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Control.AutonomousControl;
 import org.firstinspires.ftc.teamcode.Control.Rover;
-import org.firstinspires.ftc.teamcode.Control.VuforiaHandler;
-
-import java.util.List;
-
-import static org.firstinspires.ftc.teamcode.Control.VuforiaHandler.LABEL_GOLD_MINERAL;
 
 @Autonomous(name="Blue Crater", group ="Smart")
 public class BlueCrater extends AutonomousControl {
@@ -44,90 +35,51 @@ public class BlueCrater extends AutonomousControl {
             telemetry.update();
 
 
-            rob.deploy();
+            int position = rob.deploy();
+            telemetry.addData("position: ", position);
+            telemetry.update();
 
-            rob.turn(40, Rover.turnside.cw, 0.6, Rover.axis.center);
-
-            if (rob.vuforia.tfod != null) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                boolean obj = false;
-                while (!obj && opModeIsActive()) {
-                    rob.driveTrainMovement(0.05, Rover.movements.ccw);
-                    List<Recognition> updatedRecognitions = rob.vuforia.tfod.getRecognitions();
-                    if (updatedRecognitions != null) {
-                        telemetry.addData("# Object Detected", updatedRecognitions.size());
-                        if (updatedRecognitions.size() > 0) {
-                            telemetry.addData("recognized", updatedRecognitions.get(0).getLabel());
-                        }
-                        telemetry.addData("oboy: ", o);
-                        telemetry.update();
-                        for (Recognition recognition : updatedRecognitions) {
-                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                o = pos.right;
-                                obj = true;
-                                rob.stopDrivetrain();
-                            } else {
-                                obj = true;
-                                rob.stopDrivetrain();
-                                rob.turn(45, Rover.turnside.cw, 0.6, Rover.axis.center);
-                                rob.driveTrainEncoderMovement(0.4, 0.4, 3, 30, Rover.movements.left);
-                            }
-                        }
-
+            switch (position){
+                case 0:
+                default:
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.bl);
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.br);
+                    rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
+                        rob.driveTrainMovement(0.8, Rover.movements.tr);
                     }
-                    telemetry.addData("obj: ", o);
-                    telemetry.update();
-                }
-                if (o == pos.unknown) {
-                    obj = false;
+                    rob.stopDrivetrain();
 
-                    while (!obj && opModeIsActive()) {
-                        rob.driveTrainMovement(0.05, Rover.movements.cw);
-                        List<Recognition> updatedRecognitions = rob.vuforia.tfod.getRecognitions();
-                        if (updatedRecognitions != null) {
-                            telemetry.addData("# Object Detected", updatedRecognitions.size());
-                            if (updatedRecognitions.size() > 0) {
-                                telemetry.addData("recognized", updatedRecognitions.get(0).getLabel());
-                            }
-                            telemetry.addData("oboy: ", o);
-                            telemetry.update();
-                            for (Recognition recognition : updatedRecognitions) {
-                                if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                    obj = true;
-                                    rob.stopDrivetrain();
-                                    o = pos.center;
-                                } else {
-                                    obj = true;
-                                    rob.stopDrivetrain();
-                                    o = pos.left;
-                                }
-                            }
 
-                        }
-                        telemetry.addData("obj: ", o);
-                        telemetry.update();
+                    break;
+                case 1:
+                    rob.driveTrainEncoderMovement(0.7, 0.5, 5, 0, Rover.movements.forward);
+                    rob.driveTrainEncoderMovement(0.7, 2, 5, 0, Rover.movements.left);
+                    rob.driveTrainEncoderMovement(0.7, 1.5, 5, 0, Rover.movements.right);
+                    rob.driveTrainEncoderMovement(0.7, 3, 5, 0, Rover.movements.backward);
+                    rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
+                        rob.driveTrainMovement(0.8, Rover.movements.tr);
                     }
-                }
-                telemetry.addData("o: ", o);
-                telemetry.update();
-                switch (o) {
-                    case center:
-                        rob.driveTrainEncoderMovement(0.8, 1.5, 5, 500, Rover.movements.forward);
-                        break;
-                    case left:
-                        rob.turn(45, Rover.turnside.cw, 0.3, Rover.axis.center);
-                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
-                        break;
-                    case right:
-                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
-                        break;
-                    default:
-                        rob.driveTrainEncoderMovement(0.8, 2, 5, 500, Rover.movements.forward);
-                        break;
-                }
+                    rob.stopDrivetrain();
+
+                    break;
+                case 2:
+                    rob.driveTrainEncoderMovement(0.7, 0.7, 5, 30, Rover.movements.forward);
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.tl);
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.br);
+                    rob.driveTrainEncoderMovement(0.7, 3, 5, 30, Rover.movements.backward);
+                    rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
+                        rob.driveTrainMovement(0.8, Rover.movements.tr);
+                    }
+                    rob.stopDrivetrain();
+
+                    break;
 
             }
+
+            sleep(5000);
 
 
         }

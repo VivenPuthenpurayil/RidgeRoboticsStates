@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -188,11 +189,11 @@ public class Rover {
     private double maxPotentiometerVal = 5;
     private double minPotentiometerVal = 0;
     //----  MAPPING         ----
-    ModernRoboticsI2cRangeSensor FRU;
-    ModernRoboticsI2cRangeSensor FLU;
-    ModernRoboticsI2cRangeSensor BCU;
-    ModernRoboticsI2cRangeSensor BRU;
-    ModernRoboticsI2cRangeSensor BLU;
+    public ModernRoboticsI2cRangeSensor FRU;
+    public ModernRoboticsI2cRangeSensor FLU;
+    public ModernRoboticsI2cRangeSensor BCU;
+    public ModernRoboticsI2cRangeSensor BRU;
+    public ModernRoboticsI2cRangeSensor BLU;
 
 
     //----  DRIVE           ----
@@ -270,6 +271,7 @@ public class Rover {
 
         int x = 0;
         int g = -1;
+        int[] occurences = new int[3];
         while (!deployingLimit.getState() && central.opModeIsActive()) {
             anyMovement(1, movements.rackExtend, rack);
             if (x == 1){
@@ -279,6 +281,7 @@ public class Rover {
             List<Recognition> updatedRecognitions = vuforia.tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
                 central.telemetry.addData("# Object Detected", updatedRecognitions.size());
+
                 if (updatedRecognitions.size() == 2) {
                     int goldMineralX = -1;
                     int silverMineral1X = -1;
@@ -292,26 +295,57 @@ public class Rover {
                             silverMineral2X = (int) recognition.getLeft();
                         }
                     }
+                    central.telemetry.addData("gold: " + goldMineralX +" sil:" + silverMineral1X + "sil2: ", silverMineral2X);
 
-                    if (g == -1) {
-                        g = checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
-                    }
+                    g = checkMinerals(goldMineralX, silverMineral1X, silverMineral2X);
+                        switch (g){// 0 left 1 center 2 right
+                            case 0:
+                                occurences[2]++;
+                                break;
+                            case 1:
+                                if (goldMineralX < silverMineral2X){
+                                    occurences[0]++;
+                                }
+                                else{
+                                    occurences[1]++;
+                                }
+                                break;
+                            case 2:
+                                if (goldMineralX < silverMineral1X){
+                                    occurences[0]++;
+                                }
+                                else{
+                                    occurences[1]++;
+                                }
+                                break;
+                        }
+                    central.telemetry.update();
 
                 }
             }
             x++;
 
         }
+        if (occurences[2] > occurences[1] && occurences[2] > occurences[0]){
+            g = 2;
+        }
+        else if (occurences[1] > occurences[0] && occurences[1] > occurences[2]){
+            g = 1;
+        }
+        else {
+            g = 0;
+        }
         rack.setPower(0);
         //driveTrainEncoderMovement(0.8, 0.5, 3, 50, cw);
         //while(Math.absimu.getAcceleration())
         driveTrainEncoderMovement(0.2, 0.5, 5, 0, backward);
-        driveTrainEncoderMovement(0.5, 1, 5, 0, left);
+        driveTrainEncoderMovement(0.5, 1.5, 5, 0, left);
         //driveTrainEncoderMovement(0.2, 0.65, 5, 0, forward);
-return g;
+
         //driveTrainEncoderMovement(0.8, 5, 3, 50, ccw);
         //driveTrainEncoderMovement(0.8, 2, 3, 50, backward);
 
+        return g;
 
     }
 
@@ -533,9 +567,11 @@ return g;
                 // Display it for the driver.
                 // Allow time for other processes to run.
                 central.idle();
-                for (DcMotor motor: drivetrain){
-                    if (!motor.isBusy()){
-                        x =false;
+
+                for (int i = 0; i < drivetrain.length; i++) {
+                    DcMotor motor = drivetrain[i];
+                    if (!motor.isBusy() && signs[i] != 0) {
+                        x = false;
                     }
                 }
             }
@@ -725,12 +761,72 @@ return g;
         stopDrivetrain();
 
     }
+    public void teleturn(float target, turnside direction, double speed, axis rotation_Axis, Gamepad gpad) throws InterruptedException{
+
+        central.telemetry.addData("IMU State: ", imu.getSystemStatus());
+        central.telemetry.update();
+
+        double start = getDirection();
+
+        double end = (start + ((direction == turnside.cw) ? target : -target) + 360) % 360;
+
+        isnotstopped = true;
+        try {
+            switch (rotation_Axis) {
+                case center:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
+                    break;
+                case back:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
+                    break;
+                case front:
+                    driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwfront : movements.ccwfront);
+                    break;
+            }
+        } catch (InterruptedException e) {
+            isnotstopped = false;
+        }
+
+        while ((((end - getDirection()) > 1 && turnside.cw == direction) || (turnside.cw != direction && end - getDirection() < -1)) && central.opModeIsActive() && isnotstopped) {
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+            central.telemetry.update();
+            if (gpad.x){
+                stopDrivetrain();
+                return;
+            }
+        }
+        try {
+            stopDrivetrain();
+        } catch (InterruptedException e) {
+        }
+
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            central.telemetry.addData("IMU Orient: ", getDirection());
+            central.telemetry.addData("IMU Target: ", target);
+            central.telemetry.update();
+            driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
+            if (gpad.x){
+                stopDrivetrain();
+                return;
+            }
+        }
+        stopDrivetrain();
+
+    }
 
     public void turn2Wheel(float target, turnside direction, double speed) throws InterruptedException {
         turn(target, direction, speed, axis.back);
     }
 
-
+    public double calculateDifferenceBetweenAngles(double firstAngle, double secondAngle)
+    {
+        double difference = secondAngle - firstAngle;
+        while (difference < -180) difference += 360;
+        while (difference > 180) difference -= 360;
+        return difference;
+    }
     //------------------DRIVETRAIN TELEOP FUNCTIONS------------------------------------------------------------------------
     public void driveTrainMovement(double speed, movements movement) throws InterruptedException{
         double[] signs = movement.getDirections();

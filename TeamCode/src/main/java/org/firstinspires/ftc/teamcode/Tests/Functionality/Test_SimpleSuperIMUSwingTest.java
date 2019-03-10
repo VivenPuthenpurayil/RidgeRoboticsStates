@@ -21,7 +21,7 @@ public class Test_SimpleSuperIMUSwingTest extends Test {
         runtime.reset();
 
         if (opModeIsActive()) {
-            rob.driveTrainIMUSwingTurnMovementOrig(0.4, Rover.movements.forward, 3000, 90, 0.02, Rover.turnside.cw);
+            rob.driveTrainIMUSwingTurnMovement(0.4, Rover.movements.backward, 3000, 90, 0.02, Rover.turnside.ccw);
         }
 
     }
