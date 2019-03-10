@@ -728,7 +728,6 @@ public class Rover {
         double end = (start + ((direction == turnside.cw) ? target : -target) + 360) % 360;
 
         isnotstopped = true;
-        try {
             switch (rotation_Axis) {
                 case center:
                     driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
@@ -740,9 +739,7 @@ public class Rover {
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwfront : movements.ccwfront);
                     break;
             }
-        } catch (InterruptedException e) {
-            isnotstopped = false;
-        }
+
 
         while ((((end - getDirection()) > 1 && turnside.cw == direction) || (turnside.cw != direction && end - getDirection() < -1)) && central.opModeIsActive() && isnotstopped) {
             central.telemetry.addData("IMU Inital: ", start);
@@ -750,13 +747,51 @@ public class Rover {
             central.telemetry.addData("IMU Orient: ", getDirection());
             central.telemetry.update();
         }
-        try {
             stopDrivetrain();
-        } catch (InterruptedException e) {
-        }
+
 
         while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
             driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
+        }
+        stopDrivetrain();
+
+    }
+
+    public void turn2(float target, turnside direction, double speed, axis rotation_Axis) throws InterruptedException{
+
+        central.telemetry.addData("IMU State: ", imu.getSystemStatus());
+        central.telemetry.update();
+
+        double start = getDirection();
+
+        double end = (start + ((direction == turnside.cw) ? target : -target) + 360) % 360;
+
+        isnotstopped = true;
+        switch (rotation_Axis) {
+            case center:
+                driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
+                break;
+            case back:
+                driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwback : movements.ccwback);
+                break;
+            case front:
+                driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwfront : movements.ccwfront);
+                break;
+        }
+
+
+        while (((Math.abs(end - getDirection()) > 1&& central.opModeIsActive() && isnotstopped))) {
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+            central.telemetry.update();
+        }
+        stopDrivetrain();
+
+
+        while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
+            if((end-getDirection())%360>180){driveTrainMovement(0.1, ( movements.cw));}
+            else{driveTrainMovement(0.1, (movements.ccw));}
         }
         stopDrivetrain();
 
