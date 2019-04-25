@@ -28,8 +28,14 @@ public class DriveMode extends TeleOpControl {
             // GAMEPAD OBJECT
             standardGamepadData();
 
-
-            if (leftStickButtonPressed) {
+            if (gamepad2.left_stick_button) {
+                // CLOCKWISE
+                rob.driveTrainMovement(0.2, Rover.movements.cw);
+            } else if (gamepad2.right_stick_button) {
+                // COUNTERCLOCKWISE
+                rob.driveTrainMovement(0.2, Rover.movements.ccw);
+            }
+            else if (leftStickButtonPressed) {
                 // CLOCKWISE
                 rob.driveTrainMovement(ROTATION_SPEED, Rover.movements.cw);
             } else if (rightStickButtonPressed) {
@@ -49,26 +55,26 @@ public class DriveMode extends TeleOpControl {
 
                 rob.driveTrainMovement(0.2,Rover.movements.backward);
             }
-            else if (gamepad1.right_trigger > 0.25){
+            else if (gamepad1.left_trigger > 0.25){
                 rob.driveTrainMovement(0.2, Rover.movements.cw);
             }
-            else if (gamepad1.left_trigger > 0.25){
+            else if (gamepad1.right_trigger > 0.25){
                 rob.driveTrainMovement(0.2, Rover.movements.ccw);
 
             }
             else if (validStick(xAxis1, yAxis1)) { //MAIN DIRECTIONS
 
                 if (yAxis1 >= Math.abs(xAxis1)) {
-                    rob.driveTrainMovement(fb,Rover.movements.forward);
+                    rob.driveTrainMovement(fb/1.5,Rover.movements.forward);
                     //FORWARD
                 }else if (yAxis1 <= -Math.abs(xAxis1)) {
-                    rob.driveTrainMovement(fb,Rover.movements.backward);
+                    rob.driveTrainMovement(fb/1.5,Rover.movements.backward);
                     //BACKWARD
                 } else if (Math.abs(yAxis1) < xAxis1) {
-                    rob.driveTrainMovement(rl,Rover.movements.right);
+                    rob.driveTrainMovement(rl/1.5,Rover.movements.right);
                     //RIGHT
                 } else if (-Math.abs(yAxis1) > xAxis1) {
-                    rob.driveTrainMovement(rl,Rover.movements.left);
+                    rob.driveTrainMovement(rl/1.5,Rover.movements.left);
                     //LEFT
                 }
             } else if (validStick(xAxis2, yAxis2)) {    //DIAGONAL
@@ -128,10 +134,10 @@ public class DriveMode extends TeleOpControl {
 
 
             if (gamepad2.left_trigger > 0.25){
-                rob.linear.setPower(0.9);
+                rob.linear.setPower(-0.9);
             }
             else if (gamepad2.right_trigger > 0.25){
-                rob.linear.setPower(-0.9);
+                rob.linear.setPower(0.9);
             }
             else {
                 rob.linear.setPower(0);

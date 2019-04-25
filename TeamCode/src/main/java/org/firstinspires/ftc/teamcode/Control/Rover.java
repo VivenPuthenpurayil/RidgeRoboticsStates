@@ -384,11 +384,12 @@ public class Rover {
     public void setupSensors() {
 
 
-        FRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "frontRange");
-        FLU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "backRange");
+        FRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "FRU");
+        FLU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "FLU");
 
-        BCU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rightRange");
-        BRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "leftRange");
+        BCU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "BCU");
+        BRU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "BRU");
+        BLU = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "BLU");
     }
 
     public void setupVuforia(VuforiaHandler.type s) {
@@ -728,6 +729,7 @@ public class Rover {
         double end = (start + ((direction == turnside.cw) ? target : -target) + 360) % 360;
 
         isnotstopped = true;
+        try {
             switch (rotation_Axis) {
                 case center:
                     driveTrainMovement(speed, (direction == turnside.cw) ? cw : ccw);
@@ -739,19 +741,29 @@ public class Rover {
                     driveTrainMovement(speed, (direction == turnside.cw) ? movements.cwfront : movements.ccwfront);
                     break;
             }
+        } catch (InterruptedException e) {
+            isnotstopped = false;
+        }
 
-
-        while ((((end - getDirection()) > 1 && turnside.cw == direction) || (turnside.cw != direction && end - getDirection() < -1)) && central.opModeIsActive() && isnotstopped) {
+        while (((calculateDifferenceBetweenAngles(getDirection(), end) > 1 && turnside.cw == direction) || (calculateDifferenceBetweenAngles(getDirection(), end) < -1 && turnside.ccw == direction)) && central.opModeIsActive() ) {
             central.telemetry.addData("IMU Inital: ", start);
             central.telemetry.addData("IMU Final Projection: ", end);
             central.telemetry.addData("IMU Orient: ", getDirection());
+            central.telemetry.addData("IMU Difference: ", end - getDirection());
             central.telemetry.update();
         }
+        try {
             stopDrivetrain();
-
+        } catch (InterruptedException e) {
+        }
 
         while (Math.abs(end - getDirection()) > 1 && central.opModeIsActive()){
             driveTrainMovement(0.1, (direction == turnside.cw) ? ccw : movements.cw);
+            central.telemetry.addData("IMU Inital: ", start);
+            central.telemetry.addData("IMU Final Projection: ", end);
+            central.telemetry.addData("IMU Orient: ", getDirection());
+            central.telemetry.addData("IMU Diffnce: ", end - getDirection());
+            central.telemetry.update();
         }
         stopDrivetrain();
 
@@ -1030,6 +1042,19 @@ public class Rover {
 
         }
     }
+    public void anyMovementTime(double speed, movements movement, long duration, DcMotor... motors) throws InterruptedException{
+        double[] signs = movement.getDirections();
+        for (DcMotor motor: motors){
+            int x = Arrays.asList(motors).indexOf(motor);
+            motor.setPower(signs[x] * wheelAdjust[x]* speed);
+
+        }
+        central.sleep(duration);
+        for (DcMotor motor: motors){
+            motor.setPower(0);
+
+        }
+    }
     public void stopDrivetrain() throws InterruptedException{
         for (DcMotor motor: drivetrain){
             motor.setPower(0);
@@ -1136,9 +1161,10 @@ public class Rover {
         ccw2(-1, -1),
         linearOut(-1),
         linearIn(1),
-        armUp(1),
-        armDown(-1),
-        collectorEject(1);
+        armUp(-1),
+        armDown(1),
+        collectorEject(-1),
+        collectorCollect(1);
 
 
 

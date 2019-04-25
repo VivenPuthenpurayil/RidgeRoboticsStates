@@ -21,7 +21,7 @@ public class BlueCrater extends AutonomousControl {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu, Rover.setupType.tensorflow);
+        setup(runtime, Rover.setupType.drive, Rover.setupType.latching, Rover.setupType.phoneswivel, Rover.setupType.imu, Rover.setupType.mineralControl, Rover.setupType.tensorflow, Rover.setupType.sensors);
 
 
 
@@ -44,42 +44,58 @@ public class BlueCrater extends AutonomousControl {
                 default:
                     rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.bl);
                     rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.br);
-                    rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
-                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
-                        rob.driveTrainMovement(0.8, Rover.movements.tr);
+                    rob.turn(136, Rover.turnside.ccw, 0.8, Rover.axis.center);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 5){
+                        rob.driveTrainMovement(0.8, Rover.movements.right);
                     }
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 0, Rover.movements.forward);
                     rob.stopDrivetrain();
-
-
+                    //rob.anyMovementTime(0.2, Rover.movements.armDown, 100, rob.arm);
+                    rob.anyMovementTime(0.8, Rover.movements.linearOut, 1000, rob.linear);
+                    rob.anyMovementTime(0.8, Rover.movements.collectorCollect, 1000, rob.collector);
+                    rob.anyMovementTime(0.8, Rover.movements.linearIn, 1000, rob.linear);
+                    rob.driveTrainEncoderMovement(0.8, 4.5, 5, 30, Rover.movements.backward);
                     break;
                 case 1:
                     rob.driveTrainEncoderMovement(0.7, 0.5, 5, 0, Rover.movements.forward);
                     rob.driveTrainEncoderMovement(0.7, 2, 5, 0, Rover.movements.left);
                     rob.driveTrainEncoderMovement(0.7, 1.5, 5, 0, Rover.movements.right);
-                    rob.driveTrainEncoderMovement(0.7, 3, 5, 0, Rover.movements.backward);
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 0, Rover.movements.backward);
                     rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
-                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
-                        rob.driveTrainMovement(0.8, Rover.movements.tr);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 5){
+                        rob.driveTrainMovement(0.4, Rover.movements.right);
                     }
+                    rob.driveTrainEncoderMovement(0.7, 2.5, 5, 0, Rover.movements.forward);
                     rob.stopDrivetrain();
+                    //rob.anyMovementTime(0.2, Rover.movements.armDown, 100, rob.arm);
+                    rob.anyMovementTime(0.8, Rover.movements.linearOut, 1000, rob.linear);
 
+                    rob.anyMovementTime(0.4, Rover.movements.collectorCollect, 1000, rob.collector);
+                    rob.anyMovementTime(0.8, Rover.movements.linearIn, 1000, rob.linear);
+                    rob.driveTrainEncoderMovement(0.8, 4, 5, 30, Rover.movements.backward);
                     break;
                 case 2:
-                    rob.driveTrainEncoderMovement(0.7, 0.7, 5, 30, Rover.movements.forward);
+                    rob.driveTrainEncoderMovement(0.7, 0.9, 5, 30, Rover.movements.forward);
                     rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.tl);
                     rob.driveTrainEncoderMovement(0.7, 2.5, 5, 30, Rover.movements.br);
-                    rob.driveTrainEncoderMovement(0.7, 3, 5, 30, Rover.movements.backward);
+                    rob.driveTrainEncoderMovement(0.7, 3.5, 5, 30, Rover.movements.backward);
                     rob.turn(135, Rover.turnside.ccw, 0.8, Rover.axis.center);
-                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4){
-                        rob.driveTrainMovement(0.8, Rover.movements.tr);
+                    while (rob.BRU.getDistance(DistanceUnit.INCH) > 4 && rob.FRU.getDistance(DistanceUnit.INCH) > 14){
+                        rob.driveTrainMovement(0.8, Rover.movements.right);
                     }
-                    rob.stopDrivetrain();
+                    rob.driveTrainEncoderMovement(0.7, 2, 5, 0, Rover.movements.forward);
+
+                    // rob.anyMovementTime(0.2, Rover.movements.armDown, 100, rob.arm);
+                    rob.anyMovementTime(0.8, Rover.movements.linearOut, 1000, rob.linear);
+                    rob.anyMovementTime(0.4, Rover.movements.collectorCollect, 2000, rob.collector);
+                    rob.anyMovementTime(0.8, Rover.movements.linearIn, 1000, rob.linear);
+                    rob.driveTrainEncoderMovement(0.8, 5.25, 5, 30, Rover.movements.backward);
 
                     break;
 
             }
 
-            sleep(5000);
+
 
 
         }

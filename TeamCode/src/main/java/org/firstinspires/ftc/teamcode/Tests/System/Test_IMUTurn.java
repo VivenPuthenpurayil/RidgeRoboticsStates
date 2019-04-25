@@ -22,9 +22,9 @@ public class Test_IMUTurn extends Test {
             telemetry.addData("Orientation: ", rob.imu.getAngularOrientation());
             telemetry.update();
 
-            rob.turn(90, Rover.turnside.ccw, 0.4, Rover.axis.center);
+            rob.turn(90, Rover.turnside.ccw, 0.9, Rover.axis.center);
             sleep(1000);
-            rob.turn(90, Rover.turnside.cw, 0.4, Rover.axis.center);
+            rob.turn(90, Rover.turnside.cw, 0.9, Rover.axis.center);
             sleep(1000);
 
 

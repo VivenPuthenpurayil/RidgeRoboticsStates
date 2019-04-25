@@ -97,21 +97,39 @@ public class DriveModeLilBot extends TeleOpControl {
                 leftShooter.setPower(-0.95);
             }
             else{
-                //rightShooter.setPower(0);
-                //jleftShooter.setPower(0);
+                rightShooter.setPower(0);
+                leftShooter.setPower(0);
+
             }
+
+            if (gamepad1.dpad_up){
+                rightShooter.setPower(-0.5);
+                leftShooter.setPower(0.5);
+            }
+            else if (gamepad1.dpad_down){
+                rightShooter.setPower(0.5);
+                leftShooter.setPower(-0.5);
+            }
+            else{
+                rightShooter.setPower(0);
+                leftShooter.setPower(0);
+
+            }
+
             if (gamepad1.a) {
-                collector.setPower(-0.8);
+                collector.setPower(0.8);
                 rightShooter.setPower(-0.95);
                 leftShooter.setPower(0.95);
+
             }
             else if (gamepad1.y){
-                collector.setPower(0.8);
+                collector.setPower(-0.8);
+                rightShooter.setPower(0.95);
+                leftShooter.setPower(-0.95);
             }
             else {
                 collector.setPower(0);
-                rightShooter.setPower(0);
-                leftShooter.setPower(0);
+
             }
 
 
