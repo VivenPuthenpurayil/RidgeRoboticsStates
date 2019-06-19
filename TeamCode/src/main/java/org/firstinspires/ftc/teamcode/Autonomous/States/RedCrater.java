@@ -20,6 +20,7 @@ public class RedCrater extends AutonomousControl {
     public enum pos {
         left, right, center, unknown
     }
+    ///hello
 
     pos o = pos.unknown;
 
